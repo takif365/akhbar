@@ -8,17 +8,17 @@ async function fetchAndRewriteNews() {
     try {
         console.log("Starting news fetching process...");
         
-        const newsUrl = `https://gnews.io/api/v4/top-headlines?category=general&lang=ar&max=2&apikey=${NEWS_API_KEY}`;
+        const newsUrl = `https://gnews.io/api/v4/top-headlines?category=general&lang=ar&max=3&apikey=${NEWS_API_KEY}`;
         const newsRes = await fetch(newsUrl);
         const newsData = await newsRes.json();
 
         if (!newsData.articles || newsData.articles.length === 0) {
-            console.log("No new articles found.");
+            console.log("No new articles found from GNews.");
             return;
         }
 
         for (const article of newsData.articles) {
-            console.log(`Processing article: ${article.title}`);
+            console.log(`\nProcessing article: ${article.title}`);
             const originalTitle = article.title;
             const originalContent = article.description || article.content;
 
@@ -34,19 +34,40 @@ async function fetchAndRewriteNews() {
             {"title": "العنوان الجديد", "content": "المحتوى هنا"}`;
 
             const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+            const payload = {
+                contents: [{ parts: [{ text: prompt }] }],
+                safetySettings: [
+                    { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_NONE" },
+                    { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_NONE" },
+                    { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_NONE" },
+                    { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_NONE" }
+                ]
+            };
+
             const geminiRes = await fetch(geminiUrl, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    contents: [{ parts: [{ text: prompt }] }]
-                })
+                body: JSON.stringify(payload)
             });
             
             const geminiData = await geminiRes.json();
+
+            if (!geminiData.candidates || geminiData.candidates.length === 0) {
+                console.error("Gemini API rejected the content or returned empty. Skipping this article.");
+                console.error("Gemini Response:", JSON.stringify(geminiData));
+                continue; 
+            }
+
             const responseText = geminiData.candidates[0].content.parts[0].text;
             
-            let cleanJson = responseText.replace(/```json/g, '').replace(/```/g, '').trim();
-            const rewritten = JSON.parse(cleanJson);
+            let rewritten;
+            try {
+                let cleanJson = responseText.replace(/```json/g, '').replace(/```/g, '').trim();
+                rewritten = JSON.parse(cleanJson);
+            } catch (jsonError) {
+                console.error("Failed to parse Gemini response as JSON. Skipping...");
+                continue;
+            }
 
             const date = new Date();
             const slug = rewritten.title.replace(/\s+/g, '-').replace(/[^\w\-\u0600-\u06FF]/g, '').substring(0, 40);
@@ -75,7 +96,7 @@ ${rewritten.content}
             console.log(`Successfully saved: ${fileName}`);
         }
     } catch (error) {
-        console.error("Error occurred:", error);
+        console.error("Critical Error occurred:", error);
     }
 }
 
