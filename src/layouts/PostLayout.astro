@@ -18,7 +18,7 @@ const { title, description, ogImage, canonicalURL, pubDatetime, modDatetime } =
 
 const structuredData = {
   "@context": "https://schema.org",
-  "@type": "BlogPosting",
+  "@type": "NewsArticle", // تم تغييرها إلى مقال إخباري لضمان قبول جوجل نيوز
   headline: title ?? site.title,
   image: ogImage,
   ...(pubDatetime && { datePublished: pubDatetime.toISOString() }),
@@ -30,6 +30,14 @@ const structuredData = {
       ...(site.profile && { url: site.profile }),
     },
   ],
+  publisher: {
+    "@type": "Organization",
+    name: site.title,
+    logo: {
+      "@type": "ImageObject",
+      url: `${site.url}/favicon.svg` // ربط الشعار لتتعرف عليه روبوتات جوجل
+    }
+  }
 };
 ---
 
