@@ -1,3 +1,4 @@
+
 ---
 import type { HTMLAttributes } from "astro/types";
 import Socials from "./Socials.astro";
@@ -15,11 +16,17 @@ const currentYear = new Date().getFullYear();
   class:list={["app-layout", { "mt-auto": !noMarginTop }, className]}
   {...attrs}
 >
-  <div
-    class="border-border flex flex-col items-center justify-between border-t py-6 sm:flex-row-reverse sm:py-4"
-  >
+  <div class="border-border flex flex-col items-center justify-between border-t py-6 sm:flex-row-reverse sm:py-4">
     <Socials />
-    <div class="my-2 flex flex-col items-center whitespace-nowrap sm:flex-row">
+    
+    <div class="my-4 flex flex-wrap justify-center gap-4 text-sm sm:my-0">
+      <a href="/privacy" class="hover:text-primary transition-colors">سياسة الخصوصية</a>
+      <a href="/terms" class="hover:text-primary transition-colors">شروط الاستخدام</a>
+      <a href="/about" class="hover:text-primary transition-colors">من نحن</a>
+      <a href="/contact" class="hover:text-primary transition-colors">اتصل بنا</a>
+    </div>
+
+    <div class="my-2 flex flex-col items-center whitespace-nowrap text-sm sm:flex-row">
       <span>حقوق النشر &#169; {currentYear}</span>
       <span class="hidden sm:inline">&nbsp;|&nbsp;</span>
       <span>جميع الحقوق محفوظة.</span>
