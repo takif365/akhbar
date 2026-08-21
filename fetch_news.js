@@ -89,7 +89,7 @@ ${rewritten.content}
 *المصدر: وكالات*
 `;
             
-            const folderPath = path.join(process.cwd(), 'src', 'content', 'blog');
+            const folderPath = path.join(process.cwd(), 'src', 'content', 'posts');
             if (!fs.existsSync(folderPath)){
                 fs.mkdirSync(folderPath, { recursive: true });
             }
