@@ -1,0 +1,32 @@
+name: Auto News Publisher
+
+on:
+  schedule:
+    - cron: '0 */6 * * *' # تشغيل تلقائي كل 6 ساعات
+  workflow_dispatch: # زر لتشغيله يدوياً متى شئت
+
+jobs:
+  publish-news:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          
+      - name: Run AI News Script
+        env:
+          NEWS_API_KEY: ${{ secrets.NEWS_API_KEY }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: node fetch_news.js
+        
+      - name: Commit and Push New Articles
+        run: |
+          git config --global user.name 'News Bot'
+          git config --global user.email 'bot@akhbar3.com'
+          git add src/content/blog/*
+          git commit -m "إضافة أخبار جديدة تلقائياً" || echo "لا توجد تغييرات"
+          git push
