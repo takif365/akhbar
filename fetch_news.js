@@ -23,17 +23,17 @@ async function fetchAndRewriteNews() {
             const originalContent = article.description || article.content;
 
             const prompt = `أنت صحفي محترف. أعد صياغة هذا الخبر بشكل حصري واحترافي وحيادي باللغة العربية.
-            الخبر الأصلي:
+            الخبر:
             العنوان: ${originalTitle}
             التفاصيل: ${originalContent}
             
             المطلوب:
-            1. عنوان جديد جذاب ومختلف قليلاً.
-            2. محتوى الخبر معاد صياغته في فقرتين (بدون مقدمات).
-            أعطني الرد بصيغة JSON فقط كالتالي، ولا تكتب أي شيء خارج الأقواس:
+            1. عنوان جديد جذاب ومختلف.
+            2. محتوى الخبر معاد صياغته في فقرتين.
+            أعطني الرد بصيغة JSON فقط داخل الأقواس { } كالتالي:
             {"title": "العنوان الجديد", "content": "المحتوى هنا"}`;
 
-            const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+            const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=${GEMINI_API_KEY}`;
             const payload = {
                 contents: [{ parts: [{ text: prompt }] }],
                 safetySettings: [
@@ -53,8 +53,7 @@ async function fetchAndRewriteNews() {
             const geminiData = await geminiRes.json();
 
             if (!geminiData.candidates || geminiData.candidates.length === 0) {
-                console.error("Gemini API rejected the content or returned empty. Skipping this article.");
-                console.error("Gemini Response:", JSON.stringify(geminiData));
+                console.error("Gemini skipped this article.");
                 continue; 
             }
 
@@ -62,10 +61,14 @@ async function fetchAndRewriteNews() {
             
             let rewritten;
             try {
-                let cleanJson = responseText.replace(/```json/g, '').replace(/```/g, '').trim();
-                rewritten = JSON.parse(cleanJson);
+                const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+                if (!jsonMatch) {
+                    console.error("No JSON structure found. Skipping...");
+                    continue;
+                }
+                rewritten = JSON.parse(jsonMatch[0]);
             } catch (jsonError) {
-                console.error("Failed to parse Gemini response as JSON. Skipping...");
+                console.error("Failed to parse JSON. Skipping...");
                 continue;
             }
 
@@ -74,16 +77,16 @@ async function fetchAndRewriteNews() {
             const fileName = `${Date.now()}-${slug}.md`;
             
             const mdContent = `---
-title: "${rewritten.title}"
+title: "${rewritten.title.replace(/"/g, "'")}"
 pubDatetime: ${date.toISOString()}
-description: "${rewritten.content.substring(0, 120)}..."
+description: "${rewritten.content.substring(0, 100).replace(/"/g, "'")}..."
 tags:
-  - "News"
+  - "أخبار"
 ---
 
 ${rewritten.content}
 
-*Source: GNews*
+*المصدر: وكالات*
 `;
             
             const folderPath = path.join(process.cwd(), 'src', 'content', 'blog');
