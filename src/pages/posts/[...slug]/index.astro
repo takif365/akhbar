@@ -24,8 +24,6 @@ export async function getStaticPaths() {
     params: { slug: getPostSlug(post.id, post.filePath) },
     props: {
       post,
-      // sortedPosts is newest-first, so "older" (prev) is a higher index
-      // and "newer" (next) is a lower index.
       prevPost:
         index < sortedPosts.length - 1
           ? {
@@ -218,7 +216,7 @@ const ogImage = ogImageUrl
   addHeadingLinks();
 
   function attachCopyButtons() {
-    const copyButtonLabel = "Copy";
+    const copyButtonLabel = "نسخ";
     const codeBlocks = Array.from(document.querySelectorAll("pre"));
 
     for (const codeBlock of codeBlocks) {
@@ -253,7 +251,7 @@ const ogImage = ogImageUrl
 
       await navigator.clipboard.writeText(text ?? "");
 
-      button.innerText = "Copied";
+      button.innerText = "تم النسخ";
 
       setTimeout(() => {
         button.innerText = copyButtonLabel;
@@ -262,7 +260,6 @@ const ogImage = ogImageUrl
   }
   attachCopyButtons();
 
-  /** Accessible image lightbox for article images. */
   function initLightbox() {
     const article = document.getElementById("article");
     if (!article) return;
@@ -273,8 +270,6 @@ const ogImage = ogImageUrl
     let overlay = null;
     let lastFocused = null;
 
-    // Defer attribute mutations so they don't push the LCP timestamp.
-    // Event listeners below use delegation and don't need the attributes to exist yet.
     requestAnimationFrame(() => {
       const images = Array.from(article.querySelectorAll("img"));
       for (const image of images) {
@@ -284,7 +279,7 @@ const ogImage = ogImageUrl
         image.setAttribute("aria-haspopup", "dialog");
         image.setAttribute(
           "aria-label",
-          image.alt ? `Zoom image: ${image.alt}` : "Zoom image"
+          image.alt ? `تكبير الصورة: ${image.alt}` : "تكبير الصورة"
         );
       }
     });
@@ -298,14 +293,14 @@ const ogImage = ogImageUrl
       overlay.setAttribute("aria-modal", "true");
       overlay.setAttribute(
         "aria-label",
-        alt ? `Image preview: ${alt}` : "Image preview"
+        alt ? `معاينة الصورة: ${alt}` : "معاينة الصورة"
       );
       overlay.className =
         "fixed inset-0 z-50 flex cursor-zoom-out items-center justify-center bg-black/70 backdrop-blur-sm opacity-0 transition-opacity duration-200 motion-reduce:transition-none";
 
       const closeButton = document.createElement("button");
       closeButton.type = "button";
-      closeButton.setAttribute("aria-label", "Close image preview");
+      closeButton.setAttribute("aria-label", "إغلاق معاينة الصورة");
       closeButton.className =
         "absolute end-4 top-4 rounded p-2 text-3xl leading-none text-white";
       closeButton.innerHTML = "&#10005;";
@@ -476,7 +471,6 @@ const ogImage = ogImageUrl
       }
     }
 
-    // Keep keyboard focus inside the open dialog.
     function trapFocus(e) {
       if (!overlay) return;
       const focusables = overlay.querySelectorAll(
