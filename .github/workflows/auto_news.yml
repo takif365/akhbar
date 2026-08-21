@@ -30,3 +30,6 @@ jobs:
           git add .
           git commit -m "Auto update news" || echo "No changes to commit"
           git push
+          
+      - name: Trigger Cloudflare Build
+        run: curl -X POST "${{ secrets.DEPLOY_HOOK }}"
