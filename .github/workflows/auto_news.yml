@@ -2,8 +2,8 @@ name: Auto News Publisher
 
 on:
   schedule:
-    - cron: '0 */6 * * *' # تشغيل تلقائي كل 6 ساعات
-  workflow_dispatch: # زر لتشغيله يدوياً متى شئت
+    - cron: '0 */6 * * *'
+  workflow_dispatch:
 
 jobs:
   publish-news:
@@ -25,8 +25,8 @@ jobs:
         
       - name: Commit and Push New Articles
         run: |
-          git config --global user.name 'News Bot'
+          git config --global user.name 'NewsBot'
           git config --global user.email 'bot@akhbar3.com'
-          git add src/content/blog/*
-          git commit -m "إضافة أخبار جديدة تلقائياً" || echo "لا توجد تغييرات"
+          git add .
+          git commit -m "Auto update news" || echo "No changes to commit"
           git push
