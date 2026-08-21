@@ -10,13 +10,11 @@ import Socials from "@/components/Socials.astro";
 import Card from "@/components/Card.astro";
 import LinkButton from "@/components/LinkButton.astro";
 import { getSortedPosts } from "@/utils/getSortedPosts";
-import { useTranslations } from "@/i18n";
 import config from "@/config";
 
 const { socials, posts: postsConfig } = config;
 
 const locale = Astro.currentLocale ?? config.site.lang;
-const t = useTranslations(locale);
 
 const posts = await getCollection("posts");
 const sortedPosts = getSortedPosts(posts);
@@ -35,7 +33,7 @@ const homePath = getRelativeLocaleUrl(locale, "");
   >
     <section id="hero" class="border-border border-b pt-8 pb-6">
       <h1 class="my-4 inline-block text-4xl font-bold sm:my-8 sm:text-5xl">
-        Mingalaba
+        أخبار 3
       </h1>
       <a
         target="_blank"
@@ -53,26 +51,14 @@ const homePath = getRelativeLocaleUrl(locale, "");
       </a>
 
       <p>
-        AstroPaper is a minimal, responsive, accessible and SEO-friendly Astro
-        blog theme. This theme follows best practices and provides accessibility
-        out of the box. Light and dark mode are supported by default. Moreover,
-        additional color schemes can also be configured.
+        المصدر الأول للأخبار العربية والعالمية. تغطية شاملة ومستمرة على مدار الساعة لأهم الأحداث السياسية والاقتصادية بمهنية وحيادية تامة.
       </p>
-      <p class="mt-2">
-        Read the blog posts or check{" "}
-        <LinkButton
-          class="hover:text-accent underline decoration-dashed underline-offset-4"
-          href="https://github.com/satnaing/astro-paper#readme"
-        >
-          README
-        </LinkButton>{" "}
-        for more info.
-      </p>
+      
       {
         socials.length > 0 && (
           <div class="mt-4 flex max-sm:flex-col sm:items-center">
             <div class="me-2 mb-1 whitespace-nowrap sm:mb-0">
-              {t.home.socialLinks}:
+              تابعنا على:
             </div>
             <Socials />
           </div>
@@ -90,7 +76,7 @@ const homePath = getRelativeLocaleUrl(locale, "");
           ]}
         >
           <h2 class="text-2xl font-semibold tracking-wide">
-            {t.home.featured}
+            أخبار هامة
           </h2>
           <ul>
             {featuredPosts.map(data => (
@@ -105,7 +91,7 @@ const homePath = getRelativeLocaleUrl(locale, "");
       recentPosts.length > 0 && (
         <section id="recent-posts" class="pt-12 pb-6">
           <h2 class="text-2xl font-semibold tracking-wide">
-            {t.home.recentPosts}
+            أحدث الأخبار
           </h2>
           <ul>
             {recentPosts.slice(0, postsConfig.perIndex).map(data => (
@@ -118,7 +104,7 @@ const homePath = getRelativeLocaleUrl(locale, "");
 
     <div class="my-8 text-center">
       <LinkButton href={getRelativeLocaleUrl(locale, "posts")}>
-        {t.home.allPosts}
+        تصفح جميع الأخبار
         <IconArrowRight class="inline-block rtl:-rotate-180" />
       </LinkButton>
     </div>
