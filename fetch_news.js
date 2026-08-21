@@ -1,28 +1,27 @@
-const fs = require('fs');
-const path = require('path');
+import fs from 'fs';
+import path from 'path';
 
 const NEWS_API_KEY = process.env.NEWS_API_KEY;
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 
 async function fetchAndRewriteNews() {
     try {
-        console.log("بداية جلب الأخبار...");
-        // 1. جلب الأخبار من GNews
+        console.log("Starting news fetching process...");
+        
         const newsUrl = `https://gnews.io/api/v4/top-headlines?category=general&lang=ar&max=2&apikey=${NEWS_API_KEY}`;
         const newsRes = await fetch(newsUrl);
         const newsData = await newsRes.json();
 
         if (!newsData.articles || newsData.articles.length === 0) {
-            console.log("لم يتم العثور على أخبار جديدة.");
+            console.log("No new articles found.");
             return;
         }
 
         for (const article of newsData.articles) {
-            console.log(`جاري صياغة خبر: ${article.title}`);
+            console.log(`Processing article: ${article.title}`);
             const originalTitle = article.title;
             const originalContent = article.description || article.content;
 
-            // 2. إعادة الصياغة باستخدام Gemini AI
             const prompt = `أنت صحفي محترف. أعد صياغة هذا الخبر بشكل حصري واحترافي وحيادي باللغة العربية.
             الخبر الأصلي:
             العنوان: ${originalTitle}
@@ -46,11 +45,9 @@ async function fetchAndRewriteNews() {
             const geminiData = await geminiRes.json();
             const responseText = geminiData.candidates[0].content.parts[0].text;
             
-            // تنظيف النص لاستخراج JSON
             let cleanJson = responseText.replace(/```json/g, '').replace(/```/g, '').trim();
             const rewritten = JSON.parse(cleanJson);
 
-            // 3. إنشاء ملف المقال (Markdown)
             const date = new Date();
             const slug = rewritten.title.replace(/\s+/g, '-').replace(/[^\w\-\u0600-\u06FF]/g, '').substring(0, 40);
             const fileName = `${Date.now()}-${slug}.md`;
@@ -60,25 +57,25 @@ title: "${rewritten.title}"
 pubDatetime: ${date.toISOString()}
 description: "${rewritten.content.substring(0, 120)}..."
 tags:
-  - "أخبار"
+  - "News"
 ---
 
 ${rewritten.content}
 
-*المصدر: وكالات الأنباء*
+*Source: GNews*
 `;
-            // مسار الحفظ داخل قالب Astro
-            const folderPath = path.join(__dirname, 'src', 'content', 'blog');
+            
+            const folderPath = path.join(process.cwd(), 'src', 'content', 'blog');
             if (!fs.existsSync(folderPath)){
                 fs.mkdirSync(folderPath, { recursive: true });
             }
             const filePath = path.join(folderPath, fileName);
             
             fs.writeFileSync(filePath, mdContent);
-            console.log(`تم حفظ الخبر بنجاح: ${fileName}`);
+            console.log(`Successfully saved: ${fileName}`);
         }
     } catch (error) {
-        console.error("حدث خطأ:", error);
+        console.error("Error occurred:", error);
     }
 }
 
