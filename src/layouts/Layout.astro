@@ -32,7 +32,7 @@ const rssHref = getRelativeLocaleUrl(
 
 <!doctype html>
 <html
-  dir={site.dir ?? "ltr"}
+  dir={site.dir ?? "rtl"}
   lang={Astro.currentLocale ?? site.lang}
   class="overflow-y-scroll scroll-smooth"
 >
@@ -43,6 +43,20 @@ const rssHref = getRelativeLocaleUrl(
     <link rel="icon" href={getAssetPath("favicon.ico")} />
     <link rel="canonical" href={canonicalURL} />
     <meta name="generator" content={Astro.generator} />
+
+    <!-- الخط العربي الإخباري الفخم (Cairo) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+    
+    <style is:global>
+      :root {
+        --font-app: 'Cairo', sans-serif !important;
+      }
+      body {
+        font-family: 'Cairo', sans-serif !important;
+      }
+    </style>
 
     <!-- Font -->
     <Font
