@@ -4,4 +4,5 @@ title: Contact Us
 ---
 # Contact Us
 
-[Insert the Arabic Contact Us text here]
+نرحب دائماً بتواصلكم معنا. إذا كانت لديكم أي استفسارات، أو اقتراحات، أو واجهتم أي مشكلة تقنية في الموقع، يمكنكم مراسلتنا عبر البريد الإلكتروني التالي:
+contact@akhbar3.com
