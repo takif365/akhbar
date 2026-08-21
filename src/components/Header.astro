@@ -39,7 +39,7 @@ const isActive = (path: string) => {
   href="#main-content"
   class="bg-background text-accent absolute inset-s-16 -top-full z-50 px-3 py-2 backdrop-blur-lg transition-all focus:top-4"
 >
-  {t.a11y.skipToContent}
+  تخطي إلى المحتوى
 </a>
 
 <header
@@ -61,11 +61,11 @@ const isActive = (path: string) => {
       <button
         id="menu-btn"
         class="focus-outline self-end p-2 sm:hidden"
-        aria-label={t.a11y.openMenu}
+        aria-label="القائمة"
         aria-expanded="false"
         aria-controls="menu-items"
-        data-label-open={t.a11y.openMenu}
-        data-label-close={t.a11y.closeMenu}
+        data-label-open="افتح القائمة"
+        data-label-close="أغلق القائمة"
       >
         <IconX id="close-icon" class="hidden" />
         <IconMenuDeep id="menu-icon" />
@@ -79,7 +79,7 @@ const isActive = (path: string) => {
             href={getRelativeLocaleUrl(locale, "posts")}
             class:list={{ "active-nav": isActive("/posts") }}
           >
-            {t.nav.posts}
+            الأخبار
           </a>
         </li>
         <li class="col-span-2">
@@ -87,7 +87,7 @@ const isActive = (path: string) => {
             href={getRelativeLocaleUrl(locale, "tags")}
             class:list={{ "active-nav": isActive("/tags") }}
           >
-            {t.nav.tags}
+            التصنيفات
           </a>
         </li>
         <li class="col-span-2">
@@ -95,7 +95,7 @@ const isActive = (path: string) => {
             href={getRelativeLocaleUrl(locale, "about")}
             class:list={{ "active-nav": isActive("/about") }}
           >
-            {t.nav.about}
+            من نحن
           </a>
         </li>
         {
@@ -107,11 +107,11 @@ const isActive = (path: string) => {
                   "focus-outline flex size-full justify-center p-3 sm:relative sm:size-8 sm:p-0",
                   { "active-nav": isActive("/archives") },
                 ]}
-                title={t.nav.archives}
-                aria-label={t.nav.archives}
+                title="الأرشيف"
+                aria-label="الأرشيف"
               >
                 <IconArchive class="hidden sm:absolute sm:top-1/2 sm:left-1/2 sm:block sm:size-6 sm:-translate-x-1/2 sm:-translate-y-1/2" />
-                <span class="sm:sr-only">{t.nav.archives}</span>
+                <span class="sm:sr-only">الأرشيف</span>
                 {isActive("/archives") && (
                   <IconUnderline
                     aria-hidden="true"
@@ -128,11 +128,11 @@ const isActive = (path: string) => {
               <LinkButton
                 href={getRelativeLocaleUrl(locale, "search")}
                 class:list={["focus-outline relative size-8"]}
-                title={t.nav.search}
-                aria-label={t.nav.search}
+                title="بحث"
+                aria-label="بحث"
               >
                 <IconSearch class="absolute top-1/2 left-1/2 size-6 -translate-x-1/2 -translate-y-1/2" />
-                <span class="sr-only">{t.nav.search}</span>
+                <span class="sr-only">بحث</span>
                 {isActive("/search") && (
                   <IconUnderline
                     aria-hidden="true"
