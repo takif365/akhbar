@@ -29,7 +29,7 @@ async function fetchAndRewriteNews() {
             
             المطلوب:
             1. عنوان جديد جذاب ومختلف.
-            2. محتوى الخبر معاد صياغته في فقرتين.
+            2. محتوى الخبر معاد صياغته في مقال متكامل يتكون من 3 إلى 4 فقرات، مع إضافة فقرة توضح "خلفية الحدث" أو "أهمية هذا الخبر" لجعله مقالاً دقيقاً ومفيداً للقارئ.
             أعطني الرد بصيغة JSON فقط داخل الأقواس { } كالتالي:
             {"title": "العنوان الجديد", "content": "المحتوى هنا"}`;
 
@@ -78,6 +78,7 @@ async function fetchAndRewriteNews() {
             
             const mdContent = `---
 title: "${rewritten.title.replace(/"/g, "'")}"
+author: "فريق التحرير"
 pubDatetime: ${date.toISOString()}
 description: "${rewritten.content.substring(0, 100).replace(/"/g, "'")}..."
 tags:
