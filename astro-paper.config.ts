@@ -4,7 +4,7 @@ export default defineAstroPaperConfig({
   site: {
     url: "https://akhbar3.com",
     title: "أخبار 3",
-    description: "أحدث الأخبار العربية والعالمية على مدار الساعة.",
+    description: "متابعة مستمرة لأبرز الأخبار العربية والعالمية. نقدم لك تغطية شاملة للأحداث على مدار الساعة بموضوعية وحيادية.",
     author: "فريق التحرير",
     profile: "https://akhbar3.com",
     ogImage: "default-og.jpg",
