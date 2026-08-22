@@ -41,9 +41,10 @@ Requirements:
 3. Paragraph 1: Main event summary.
 4. Paragraph 2: Available details and information.
 5. Paragraph 3: Event background, importance, and expected impacts.
+6. Categorize the article by selecting exactly ONE or TWO tags ONLY from this strict list: ["سياسة", "اقتصاد", "رياضة", "تكنولوجيا", "صحة", "علوم", "منوعات"]. Do not create or use any tags outside this list.
 
 Provide the response in JSON format only inside { } brackets like this:
-{"title": "New Title", "content": "Content here"}`;
+{"title": "New Title", "content": "Content here", "tags": ["tag1", "tag2"]}`;
 
         const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=${GEMINI_API_KEY}`;
         const payload = {
@@ -88,6 +89,15 @@ Provide the response in JSON format only inside { } brackets like this:
         const cleanTitle = rewritten.title.replace(/"/g, "'");
         const cleanDescription = rewritten.content.substring(0, 100).replace(/"/g, "'") + "...";
 
+        let tagsList = '';
+        if (rewritten.tags && Array.isArray(rewritten.tags) && rewritten.tags.length > 0) {
+            rewritten.tags.forEach(tag => {
+                tagsList += `  - "${tag.replace(/"/g, "'")}"\n`;
+            });
+        } else {
+             tagsList = '  - "أخبار"\n'; 
+        }
+
         let mdContent = `---
 title: "${cleanTitle}"
 author: "Editorial Team"
@@ -95,8 +105,7 @@ pubDatetime: ${publishDate.toISOString()}
 description: "${cleanDescription}"
 ogImage: "${imageUrl}"
 tags:
-  - "أخبار"
----
+${tagsList}---
 
 ![صورة الخبر](${imageUrl})
 
