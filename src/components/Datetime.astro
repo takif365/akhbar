@@ -2,12 +2,14 @@
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import timezone from "dayjs/plugin/timezone";
+import "dayjs/locale/ar";
 import IconCalendar from "@/assets/icons/IconCalendar.svg";
 import config from "@/config";
 import { useTranslations } from "@/i18n";
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
+dayjs.locale("ar");
 
 type Props = {
   class?: string;
@@ -33,7 +35,8 @@ const datetime = dayjs(isModified ? modDatetime : pubDatetime).tz(
   postTimezone ?? config.site.timezone
 );
 
-const date = datetime.format("D MMM, YYYY");
+// Format date and time in Arabic (Day Month Year, Hour:Minute)
+const date = datetime.format("D MMMM YYYY, HH:mm");
 ---
 
 <div
