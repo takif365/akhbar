@@ -10,10 +10,12 @@ async function fetchAndRewriteNews() {
         const newsRes = await fetch(newsUrl);
         const newsData = await newsRes.json();
 
+        // 1. إنهاء السكربت فوراً إذا لم تكن هناك أخبار
         if (!newsData.articles || newsData.articles.length === 0) {
             process.exit(0);
         }
 
+        // 2. البحث الصارم عن خبر يحتوي على صورة حقيقية
         let selectedArticle = null;
         for (const article of newsData.articles) {
             if (article.image && typeof article.image === 'string' && article.image.trim() !== '') {
@@ -22,6 +24,7 @@ async function fetchAndRewriteNews() {
             }
         }
 
+        // إنهاء السكربت إذا لم يجد أي خبر بصورة (الصرامة التي طلبتها)
         if (!selectedArticle) {
             process.exit(0);
         }
@@ -30,6 +33,7 @@ async function fetchAndRewriteNews() {
         const originalContent = selectedArticle.description || selectedArticle.content;
         const imageUrl = selectedArticle.image;
 
+        // 3. أمر صارم لـ Gemini بعدم استخدام أي أكواد صور داخل النص
         const prompt = `Act as a professional journalist. Rewrite this news professionally and neutrally in Arabic.
 News:
 Title: ${originalTitle}
@@ -42,6 +46,7 @@ Requirements:
 4. Paragraph 2: Available details and information.
 5. Paragraph 3: Event background, importance, and expected impacts.
 6. Categorize the article by selecting exactly ONE or TWO tags ONLY from this strict list: ["سياسة", "اقتصاد", "رياضة", "تكنولوجيا", "صحة", "علوم", "منوعات"]. Do not create or use any tags outside this list.
+7. CRITICAL: Do NOT write or include any Markdown image syntax (like ![alt](url)) or HTML image tags inside your content. Text ONLY.
 
 Provide the response in JSON format only inside { } brackets like this:
 {"title": "New Title", "content": "Content here", "tags": ["tag1", "tag2"]}`;
@@ -82,12 +87,15 @@ Provide the response in JSON format only inside { } brackets like this:
             process.exit(0);
         }
 
+        // 4. فلتر التنظيف: مسح أي صورة قد يهلوس بها الذكاء الاصطناعي داخل النص
+        const cleanContent = rewritten.content.replace(/!\[.*?\]\(.*?\)/g, '').trim();
+
         const publishDate = new Date();
         const slug = rewritten.title.replace(/\s+/g, '-').replace(/[^\w\-\u0600-\u06FF]/g, '').substring(0, 40);
         const fileName = `${publishDate.getTime()}-${slug}.md`;
         
         const cleanTitle = rewritten.title.replace(/"/g, "'");
-        const cleanDescription = rewritten.content.substring(0, 100).replace(/"/g, "'") + "...";
+        const cleanDescription = cleanContent.substring(0, 100).replace(/"/g, "'") + "...";
 
         let tagsList = '';
         if (rewritten.tags && Array.isArray(rewritten.tags) && rewritten.tags.length > 0) {
@@ -100,7 +108,7 @@ Provide the response in JSON format only inside { } brackets like this:
 
         let mdContent = `---
 title: "${cleanTitle}"
-author: "Editorial Team"
+author: "فريق التحرير"
 pubDatetime: ${publishDate.toISOString()}
 description: "${cleanDescription}"
 ogImage: "${imageUrl}"
@@ -109,7 +117,7 @@ ${tagsList}---
 
 ![صورة الخبر](${imageUrl})
 
-${rewritten.content}
+${cleanContent}
 
 *المصدر: وكالات*
 `;
