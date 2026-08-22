@@ -8,6 +8,7 @@ async function fetchAndRewriteNews() {
     try {
         console.log("Starting news fetching process...");
         
+        // جلب 3 مقالات
         const newsUrl = `https://gnews.io/api/v4/top-headlines?category=general&lang=ar&max=3&apikey=${NEWS_API_KEY}`;
         const newsRes = await fetch(newsUrl);
         const newsData = await newsRes.json();
@@ -17,11 +18,19 @@ async function fetchAndRewriteNews() {
             return;
         }
 
-        for (const article of newsData.articles) {
-            console.log(`\nProcessing article: ${article.title}`);
+        // تحديد وقت الأساس (الوقت الحالي الذي بدأ فيه السكربت)
+        let baseTime = Date.now();
+
+        for (let i = 0; i < newsData.articles.length; i++) {
+            const article = newsData.articles[i];
+            console.log(`\nProcessing article ${i + 1}: ${article.title}`);
             const originalTitle = article.title;
             const originalContent = article.description || article.content;
+            
+            // استخراج رابط الصورة (إن وجد)
+            const imageUrl = article.image ? article.image : "";
 
+            // Prompt محسن لمقال طويل واحترافي
             const prompt = `أنت صحفي محترف. أعد صياغة هذا الخبر بشكل حصري واحترافي وحيادي باللغة العربية.
             الخبر:
             العنوان: ${originalTitle}
@@ -29,7 +38,11 @@ async function fetchAndRewriteNews() {
             
             المطلوب:
             1. عنوان جديد جذاب ومختلف.
-            2. محتوى الخبر معاد صياغته في مقال متكامل يتكون من 3 إلى 4 فقرات، مع إضافة فقرة توضح "خلفية الحدث" أو "أهمية هذا الخبر" لجعله مقالاً دقيقاً ومفيداً للقارئ.
+            2. اكتب مقالاً إخبارياً متكاملاً لا يقل عن 3 فقرات طويلة.
+            3. الفقرة الأولى: ملخص للحدث الرئيسي.
+            4. الفقرة الثانية: التفاصيل والمعلومات المتوفرة.
+            5. الفقرة الثالثة: خلفية الحدث أو أهميته وتأثيراته المتوقعة.
+            
             أعطني الرد بصيغة JSON فقط داخل الأقواس { } كالتالي:
             {"title": "العنوان الجديد", "content": "المحتوى هنا"}`;
 
@@ -72,18 +85,33 @@ async function fetchAndRewriteNews() {
                 continue;
             }
 
-            const date = new Date();
+            // *** حل معادلة الوقت المتباين ***
+            // إنقاص وقت عشوائي (بين 5 إلى 25 دقيقة) من وقت المقال السابق
+            // هذا يجعل المقال الأول أحدث، والثاني أقدم بقليل، والثالث أقدم أكثر
+            const randomOffsetMinutes = Math.floor(Math.random() * (25 - 5 + 1) + 5);
+            baseTime = baseTime - (randomOffsetMinutes * 60 * 1000);
+            const publishDate = new Date(baseTime);
+
             const slug = rewritten.title.replace(/\s+/g, '-').replace(/[^\w\-\u0600-\u06FF]/g, '').substring(0, 40);
-            const fileName = `${Date.now()}-${slug}.md`;
+            const fileName = `${publishDate.getTime()}-${slug}.md`;
             
-            const mdContent = `---
+            // إضافة حقل author والصورة (ogImage) إلى الـ Frontmatter
+            let mdContent = `---
 title: "${rewritten.title.replace(/"/g, "'")}"
 author: "فريق التحرير"
-pubDatetime: ${date.toISOString()}
+pubDatetime: ${publishDate.toISOString()}
 description: "${rewritten.content.substring(0, 100).replace(/"/g, "'")}..."
-tags:
+`;
+            
+            if (imageUrl) {
+                mdContent += `ogImage: "${imageUrl}"\n`;
+            }
+
+            mdContent += `tags:
   - "أخبار"
 ---
+
+${imageUrl ? `![صورة الخبر](${imageUrl})\n\n` : ''}
 
 ${rewritten.content}
 
@@ -97,7 +125,7 @@ ${rewritten.content}
             const filePath = path.join(folderPath, fileName);
             
             fs.writeFileSync(filePath, mdContent);
-            console.log(`Successfully saved: ${fileName}`);
+            console.log(`Successfully saved: ${fileName} with date: ${publishDate.toISOString()}`);
         }
     } catch (error) {
         console.error("Critical Error occurred:", error);
