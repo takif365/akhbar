@@ -34,4 +34,5 @@ jobs:
           git config --global user.email 'bot@akhbar3.com'
           git add src/content/posts/*
           git commit -m "Auto add new article" || echo "No changes"
+          git pull --rebase origin main
           git push
