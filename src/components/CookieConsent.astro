@@ -2,41 +2,50 @@
 ---
 
 <div
-  id="cookie-banner"
-  class="fixed inset-x-0 bottom-0 z-[999] hidden flex-col items-center justify-between gap-4 p-4 shadow-2xl sm:flex-row bg-blue-600 dark:bg-orange-600 text-white"
+  id="cookie-modal-overlay"
+  class="fixed inset-0 z-[999] hidden items-center justify-center bg-black/50 p-4 backdrop-blur-sm"
   dir="rtl"
 >
-  <p class="text-center text-sm sm:text-right">
-    نستخدم ملفات تتبع الاستخدام لضمان تقديم أفضل تجربة تصفح ممكنة. باستمرارك في استخدام الموقع، فإنك توافق على 
-    <a href="/privacy" class="font-bold underline hover:text-gray-200">سياسة الخصوصية</a> الخاصة بنا.
-  </p>
-  <div class="flex flex-shrink-0 gap-4">
-    <button
-      id="accept-cookies"
-      class="rounded bg-white px-6 py-2 text-sm font-bold text-gray-900 transition-colors hover:bg-gray-200"
-    >
-      موافق
-    </button>
+  <div
+    class="relative w-full max-w-md rounded-lg border border-border bg-skin-fill p-6 shadow-2xl"
+  >
+    <div class="mb-4 text-center">
+      <h3 class="mb-2 text-xl font-bold text-skin-accent">نقدر خصوصيتك</h3>
+      <p class="text-sm text-skin-base leading-relaxed">
+        نستخدم ملفات تتبع الاستخدام لضمان تقديم أفضل تجربة تصفح ممكنة، وتحليل حركة المرور. باستمرارك في استخدام الموقع، فإنك توافق على 
+        <a href="/privacy" class="text-skin-accent hover:underline font-bold">سياسة الخصوصية</a>.
+      </p>
+    </div>
+    <div class="flex justify-center">
+      <button
+        id="accept-cookies"
+        class="w-full rounded bg-skin-accent px-6 py-2.5 text-sm font-bold text-skin-inverted transition-colors hover:opacity-80 sm:w-auto"
+      >
+        موافق ومتابعة
+      </button>
+    </div>
   </div>
 </div>
 
 <script>
   document.addEventListener('astro:page-load', () => {
-    const banner = document.getElementById('cookie-banner');
+    const overlay = document.getElementById('cookie-modal-overlay');
     const acceptBtn = document.getElementById('accept-cookies');
 
-    if (banner && acceptBtn) {
+    if (overlay && acceptBtn) {
       const consent = localStorage.getItem('cookieConsent');
       
       if (!consent) {
-        banner.classList.remove('hidden');
-        banner.classList.add('flex');
+        overlay.classList.remove('hidden');
+        overlay.classList.add('flex');
+        document.body.style.overflow = 'hidden'; // لمنع التمرير خلف النافذة
       }
 
       acceptBtn.addEventListener('click', () => {
         localStorage.setItem('cookieConsent', 'true');
-        banner.classList.add('hidden');
-        banner.classList.remove('flex');
+        overlay.classList.add('hidden');
+        overlay.classList.remove('flex');
+        document.body.style.overflow = ''; // إعادة تفعيل التمرير
       });
     }
   });
