@@ -1,10 +1,30 @@
 ---
-layout: ../layouts/AboutLayout.astro
-title: اتصل بنا
+title: "اتصل بنا"
 ---
 
-نرحب دائماً بتواصلكم معنا. إذا كانت لديكم أي استفسارات، أو اقتراحات، أو واجهتم أي مشكلة تقنية في الموقع، يمكنكم مراسلتنا عبر:
+نحن في **أخبار 3** نسعد دائماً بتواصلكم معنا. سواء كان لديكم استفسار، اقتراح، أو رغبة في الإعلان، لا تترددوا في مراسلتنا عبر القنوات المتاحة أدناه.
 
-**البريد الإلكتروني:** info@akhbar3.com
+<div class="mt-8 space-y-6">
 
-نحن نسعى للرد على جميع الاستفسارات في أقرب وقت ممكن.
+<div>
+<h3 class="text-lg font-bold text-skin-accent mb-2">البريد الإلكتروني</h3>
+<p class="opacity-90">للتواصل العام والاستفسارات: <a href="mailto:info@akhbar3.com" class="text-skin-accent hover:underline">info@akhbar3.com</a></p>
+<p class="opacity-90 mt-1">لإرسال الأخبار والمواد الصحفية: <a href="mailto:news@akhbar3.com" class="text-skin-accent hover:underline">news@akhbar3.com</a></p>
+</div>
+
+<div>
+<h3 class="text-lg font-bold text-skin-accent mb-2">مواقع التواصل الاجتماعي</h3>
+<p class="opacity-90">يمكنكم متابعتنا والتواصل معنا عبر حساباتنا الرسمية على منصات التواصل الاجتماعي:</p>
+<ul class="list-disc list-inside mt-2 opacity-90">
+<li>منصة إكس (تويتر سابقاً)</li>
+<li>فيسبوك</li>
+<li>تلغرام</li>
+</ul>
+</div>
+
+<div>
+<h3 class="text-lg font-bold text-skin-accent mb-2">ملاحظة هامة</h3>
+<p class="opacity-90">فريقنا يعمل بجد للرد على جميع رسائلكم في أسرع وقت ممكن. نرجو منكم توضيح سبب المراسلة في عنوان البريد الإلكتروني لضمان توجيه الرسالة إلى القسم المختص.</p>
+</div>
+
+</div>
