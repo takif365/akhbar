@@ -95,14 +95,14 @@ pubDatetime: ${publishDate.toISOString()}
 description: "${cleanDescription}"
 ogImage: "${imageUrl}"
 tags:
-  - "News"
+  - "أخبار"
 ---
 
-![News Image](${imageUrl})
+![صورة الخبر](${imageUrl})
 
 ${rewritten.content}
 
-*Source: Agencies*
+*المصدر: وكالات*
 `;
         
         const folderPath = path.join(process.cwd(), 'src', 'content', 'posts');
