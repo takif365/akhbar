@@ -2,7 +2,7 @@ name: Auto News Publisher
 
 on:
   schedule:
-    - cron: '0 */6 * * *'
+    - cron: '0 */4 * * *'
   workflow_dispatch:
 
 jobs:
@@ -12,6 +12,11 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
       
+      - name: Random Delay
+        run: |
+          DELAY=$((RANDOM % 2700))
+          sleep $DELAY
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -25,12 +30,8 @@ jobs:
         
       - name: Commit and Push New Articles
         run: |
-          git config --global user.name 'NewsBot'
+          git config --global user.name 'News Bot'
           git config --global user.email 'bot@akhbar3.com'
-          git add .
-          git commit -m "Auto update news" || echo "No changes to commit"
-          git pull --rebase origin main
+          git add src/content/posts/*
+          git commit -m "Auto add new article" || echo "No changes"
           git push
-          
-      - name: Trigger Cloudflare Build
-        run: curl -X POST "${{ secrets.DEPLOY_HOOK }}"
