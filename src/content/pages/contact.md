@@ -13,16 +13,6 @@ title: "اتصل بنا"
 </div>
 
 <div>
-<h3 class="text-lg font-bold text-skin-accent mb-2">مواقع التواصل الاجتماعي</h3>
-<p class="opacity-90">يمكنكم متابعتنا والتواصل معنا عبر حساباتنا الرسمية على منصات التواصل الاجتماعي:</p>
-<ul class="list-disc list-inside mt-2 opacity-90">
-<li>منصة إكس (تويتر سابقاً)</li>
-<li>فيسبوك</li>
-<li>تلغرام</li>
-</ul>
-</div>
-
-<div>
 <h3 class="text-lg font-bold text-skin-accent mb-2">ملاحظة هامة</h3>
 <p class="opacity-90">فريقنا يعمل بجد للرد على جميع رسائلكم في أسرع وقت ممكن. نرجو منكم توضيح سبب المراسلة في عنوان البريد الإلكتروني لضمان توجيه الرسالة إلى القسم المختص.</p>
 </div>
