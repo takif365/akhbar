@@ -2,8 +2,8 @@ name: Auto News Publisher
 
 on:
   schedule:
-    - cron: '0 */6 * * *' # تشغيل تلقائي كل 6 ساعات
-  workflow_dispatch: # زر لتشغيله يدوياً متى شئت
+    - cron: '0 * * * *'
+  workflow_dispatch:
 
 jobs:
   publish-news:
@@ -12,6 +12,12 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
       
+      - name: Random Delay
+        run: |
+          DELAY=$((RANDOM % 3600))
+          echo "Sleeping for $DELAY seconds before fetching news..."
+          sleep $DELAY
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -27,6 +33,6 @@ jobs:
         run: |
           git config --global user.name 'News Bot'
           git config --global user.email 'bot@akhbar3.com'
-          git add src/content/blog/*
+          git add src/content/posts/*
           git commit -m "إضافة أخبار جديدة تلقائياً" || echo "لا توجد تغييرات"
           git push
