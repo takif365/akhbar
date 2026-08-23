@@ -10,18 +10,18 @@ async function fetchAndRewriteNews() {
         let selectedArticle = null;
 
         try {
-            const ndUrl = `https://newsdata.io/api/1/news?apikey=${NEWSDATA_API_KEY}&language=ar&image=1`;
-            const ndRes = await fetch(ndUrl);
-            const ndData = await ndRes.json();
+            const cuUrl = `https://api.currentsapi.services/v1/latest-news?language=en&apiKey=${CURRENTS_API_KEY}`;
+            const cuRes = await fetch(cuUrl);
+            const cuData = await cuRes.json();
             
-            if (ndData.status === "success" && ndData.results && ndData.results.length > 0) {
-                for (const article of ndData.results) {
-                    if (article.image_url && typeof article.image_url === 'string' && article.image_url.trim() !== '') {
+            if (cuData.status === "ok" && cuData.news && cuData.news.length > 0) {
+                for (const article of cuData.news) {
+                    if (article.image && typeof article.image === 'string' && article.image !== 'None' && article.image.trim() !== '') {
                         selectedArticle = {
                             title: article.title,
-                            content: article.description || article.content || article.title,
-                            image: article.image_url,
-                            pubDate: article.pubDate
+                            content: article.description || article.title,
+                            image: article.image,
+                            pubDate: article.published
                         };
                         break;
                     }
@@ -31,18 +31,18 @@ async function fetchAndRewriteNews() {
 
         if (!selectedArticle) {
             try {
-                const cuUrl = `https://api.currentsapi.services/v1/latest-news?language=en&apiKey=${CURRENTS_API_KEY}`;
-                const cuRes = await fetch(cuUrl);
-                const cuData = await cuRes.json();
+                const ndUrl = `https://newsdata.io/api/1/news?apikey=${NEWSDATA_API_KEY}&language=ar&image=1`;
+                const ndRes = await fetch(ndUrl);
+                const ndData = await ndRes.json();
                 
-                if (cuData.status === "ok" && cuData.news && cuData.news.length > 0) {
-                    for (const article of cuData.news) {
-                        if (article.image && typeof article.image === 'string' && article.image !== 'None' && article.image.trim() !== '') {
+                if (ndData.status === "success" && ndData.results && ndData.results.length > 0) {
+                    for (const article of ndData.results) {
+                        if (article.image_url && typeof article.image_url === 'string' && article.image_url.trim() !== '') {
                             selectedArticle = {
                                 title: article.title,
-                                content: article.description || article.title,
-                                image: article.image,
-                                pubDate: article.published
+                                content: article.description || article.content || article.title,
+                                image: article.image_url,
+                                pubDate: article.pubDate
                             };
                             break;
                         }
