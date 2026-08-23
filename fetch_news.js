@@ -7,30 +7,42 @@ const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 
 async function fetchAndRewriteNews() {
     try {
+        console.log("=== بدء عملية جلب الأخبار ===");
         let selectedArticle = null;
 
+        // 1. تجربة Currents API
         try {
+            console.log("-> جاري البحث في Currents API...");
             const cuUrl = `https://api.currentsapi.services/v1/latest-news?language=en&apiKey=${CURRENTS_API_KEY}`;
             const cuRes = await fetch(cuUrl);
             const cuData = await cuRes.json();
             
             if (cuData.status === "ok" && cuData.news && cuData.news.length > 0) {
+                console.log(`تم العثور على ${cuData.news.length} أخبار في Currents. جاري الفلترة...`);
                 for (const article of cuData.news) {
                     if (article.image && typeof article.image === 'string' && article.image !== 'None' && article.image.trim() !== '') {
                         selectedArticle = {
                             title: article.title,
                             content: article.description || article.title,
                             image: article.image,
-                            pubDate: article.published
+                            pubDate: article.published,
+                            source: "Currents"
                         };
+                        console.log("✅ تم اختيار خبر من Currents:", selectedArticle.title);
                         break;
                     }
                 }
+            } else {
+                console.log("❌ Currents API لم يُرجع أي أخبار.");
             }
-        } catch (e) {}
+        } catch (e) {
+            console.error("❌ خطأ في الاتصال بـ Currents:", e.message);
+        }
 
+        // 2. تجربة NewsData API كخطة بديلة
         if (!selectedArticle) {
             try {
+                console.log("-> جاري البحث في NewsData API كبديل...");
                 const ndUrl = `https://newsdata.io/api/1/news?apikey=${NEWSDATA_API_KEY}&language=ar&image=1`;
                 const ndRes = await fetch(ndUrl);
                 const ndData = await ndRes.json();
@@ -42,19 +54,28 @@ async function fetchAndRewriteNews() {
                                 title: article.title,
                                 content: article.description || article.content || article.title,
                                 image: article.image_url,
-                                pubDate: article.pubDate
+                                pubDate: article.pubDate,
+                                source: "NewsData"
                             };
+                            console.log("✅ تم اختيار خبر من NewsData:", selectedArticle.title);
                             break;
                         }
                     }
+                } else {
+                    console.log("❌ NewsData API لم يُرجع أي أخبار.");
                 }
-            } catch (e) {}
+            } catch (e) {
+                console.error("❌ خطأ في الاتصال بـ NewsData:", e.message);
+            }
         }
 
+        // إنهاء إذا لم نجد أي خبر بصورة
         if (!selectedArticle) {
-            process.exit(0);
+            console.log("🛑 السكربت توقف: لم يتم العثور على أي خبر بصورة في كلا الموقعين.");
+            return;
         }
 
+        console.log(`=== إرسال الخبر للذكاء الاصطناعي (المصدر: ${selectedArticle.source}) ===`);
         const originalTitle = selectedArticle.title;
         const originalContent = selectedArticle.content;
         const imageUrl = selectedArticle.image;
@@ -77,7 +98,8 @@ Requirements:
 Provide the response in JSON format only inside { } brackets like this:
 {"title": "New Title in Arabic", "content": "Arabic Content here", "tags": ["tag1", "tag2"]}`;
 
-        const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+        // استخدمنا الموديل المستقر والأسرع 1.5-flash
+        const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
         const payload = {
             contents: [{ parts: [{ text: prompt }] }],
             safetySettings: [
@@ -97,24 +119,27 @@ Provide the response in JSON format only inside { } brackets like this:
         const geminiData = await geminiRes.json();
 
         if (!geminiData.candidates || geminiData.candidates.length === 0) {
-            process.exit(0);
+            console.log("❌ السكربت توقف: Gemini رفض صياغة المقال أو أعاد رداً فارغاً.", JSON.stringify(geminiData).substring(0, 200));
+            return;
         }
 
+        console.log("✅ Gemini قام بالرد بنجاح. جاري استخراج النص...");
         const responseText = geminiData.candidates[0].content.parts[0].text;
         
         let rewritten;
         try {
             const jsonMatch = responseText.match(/\{[\s\S]*\}/);
             if (!jsonMatch) {
-                process.exit(0);
+                console.log("❌ السكربت توقف: رد Gemini لم يكن بصيغة JSON.", responseText);
+                return;
             }
             rewritten = JSON.parse(jsonMatch[0]);
         } catch (jsonError) {
-            process.exit(0);
+            console.log("❌ السكربت توقف: فشل في قراءة هيكل JSON.", jsonError.message);
+            return;
         }
 
         const cleanContent = rewritten.content.replace(/!\[.*?\]\(.*?\)/g, '').trim();
-
         const publishDate = selectedArticle.pubDate ? new Date(selectedArticle.pubDate) : new Date();
         const slug = rewritten.title.replace(/\s+/g, '-').replace(/[^\w\-\u0600-\u06FF]/g, '').substring(0, 40);
         const fileName = `${publishDate.getTime()}-${slug}.md`;
@@ -154,8 +179,10 @@ ${cleanContent}
         const filePath = path.join(folderPath, fileName);
         
         fs.writeFileSync(filePath, mdContent);
+        console.log(`✅ تمت العملية بنجاح! تم حفظ المقال: ${fileName}`);
         
     } catch (error) {
+        console.error("❌ خطأ برمجي حرج:", error.message);
         process.exit(1);
     }
 }
