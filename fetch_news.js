@@ -90,7 +90,9 @@ Provide the response in JSON format only inside { } brackets like this:
         // 4. فلتر التنظيف: مسح أي صورة قد يهلوس بها الذكاء الاصطناعي داخل النص
         const cleanContent = rewritten.content.replace(/!\[.*?\]\(.*?\)/g, '').trim();
 
-        const publishDate = new Date();
+        // التعديل هنا: سحب وقت النشر الأصلي من وكالة الأنباء بدلاً من وقت الروبوت
+        const publishDate = selectedArticle.publishedAt ? new Date(selectedArticle.publishedAt) : new Date();
+        
         const slug = rewritten.title.replace(/\s+/g, '-').replace(/[^\w\-\u0600-\u06FF]/g, '').substring(0, 40);
         const fileName = `${publishDate.getTime()}-${slug}.md`;
         
