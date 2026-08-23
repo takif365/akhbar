@@ -36,3 +36,6 @@ jobs:
           git commit -m "Auto add new article" || echo "No changes"
           git pull --rebase origin main
           git push
+          
+      - name: Trigger Cloudflare Build
+        run: curl -X POST "${{ secrets.DEPLOY_HOOK }}"
