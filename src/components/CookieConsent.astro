@@ -7,7 +7,7 @@
   dir="rtl"
 >
   <div
-    class="relative w-full max-w-md rounded-xl border border-border bg-skin-fill p-6 shadow-2xl backdrop-blur-md bg-opacity-95 pointer-events-auto"
+    class="relative w-full max-w-md rounded-xl border border-border bg-[#fdfdfd] dark:bg-[#212737] p-6 shadow-2xl pointer-events-auto"
   >
     <div class="mb-5 text-center">
       <h3 class="mb-3 text-xl font-bold text-skin-accent">إشعار الخصوصية</h3>
@@ -15,12 +15,12 @@
         نحن نستخدم ملفات تعريف الارتباط لتحسين تجربتك. استمرارك في التصفح يعني موافقتك على ذلك.
         <br />
         <a href="/privacy" class="text-skin-accent hover:underline font-bold mt-1.5 inline-block">سياسة الخصوصية</a>
-      </p>
+      </p> 
     </div>
     <div class="flex justify-center">
       <button
         id="accept-cookies"
-        class="w-full rounded bg-skin-accent px-6 py-2.5 text-sm font-bold text-skin-inverted transition-colors hover:opacity-80 sm:w-auto cursor-pointer"
+        class="w-full rounded bg-[#0f75b1] dark:bg-[#ed6506] px-6 py-2.5 text-sm font-bold text-white transition-colors hover:opacity-80 sm:w-auto cursor-pointer"
       >
         موافق
       </button>
@@ -39,6 +39,8 @@
       if (!consent) {
         overlay.classList.remove('hidden');
         overlay.classList.add('flex');
+        // إضافة لون خلفية خفيف جداً للشاشة وراء النافذة لكي تبرز بشكل أجمل
+        overlay.style.backgroundColor = "rgba(0, 0, 0, 0.4)";
       }
 
       acceptBtn.addEventListener('click', () => {
