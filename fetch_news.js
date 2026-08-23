@@ -1,8 +1,8 @@
 import fs from 'fs';
 import path from 'path';
 
-const NEWS_API_KEY = process.env.NEWS_API_KEY;
 const NEWSDATA_API_KEY = process.env.NEWSDATA_API_KEY;
+const CURRENTS_API_KEY = process.env.CURRENTS_API_KEY;
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 
 async function fetchAndRewriteNews() {
@@ -31,18 +31,18 @@ async function fetchAndRewriteNews() {
 
         if (!selectedArticle) {
             try {
-                const gnUrl = `https://gnews.io/api/v4/top-headlines?category=general&lang=ar&max=10&apikey=${NEWS_API_KEY}`;
-                const gnRes = await fetch(gnUrl);
-                const gnData = await gnRes.json();
+                const cuUrl = `https://api.currentsapi.services/v1/latest-news?language=en&apiKey=${CURRENTS_API_KEY}`;
+                const cuRes = await fetch(cuUrl);
+                const cuData = await cuRes.json();
                 
-                if (gnData.articles && gnData.articles.length > 0) {
-                    for (const article of gnData.articles) {
-                        if (article.image && typeof article.image === 'string' && article.image.trim() !== '') {
+                if (cuData.status === "ok" && cuData.news && cuData.news.length > 0) {
+                    for (const article of cuData.news) {
+                        if (article.image && typeof article.image === 'string' && article.image !== 'None' && article.image.trim() !== '') {
                             selectedArticle = {
                                 title: article.title,
-                                content: article.description || article.content || article.title,
+                                content: article.description || article.title,
                                 image: article.image,
-                                pubDate: article.publishedAt
+                                pubDate: article.published
                             };
                             break;
                         }
@@ -59,14 +59,14 @@ async function fetchAndRewriteNews() {
         const originalContent = selectedArticle.content;
         const imageUrl = selectedArticle.image;
 
-        const prompt = `Act as a professional journalist. Rewrite this news professionally and neutrally in Arabic.
+        const prompt = `Act as a professional journalist. Translate and rewrite this news professionally and neutrally in Arabic.
 News:
 Title: ${originalTitle}
 Details: ${originalContent}
 
 Requirements:
-1. New attractive title.
-2. Write a comprehensive news article of at least 3 long paragraphs.
+1. New attractive Arabic title.
+2. Write a comprehensive news article of at least 3 long paragraphs in Arabic.
 3. Paragraph 1: Main event summary.
 4. Paragraph 2: Available details and information.
 5. Paragraph 3: Event background, importance, and expected impacts.
@@ -74,7 +74,7 @@ Requirements:
 7. CRITICAL: Do NOT write or include any Markdown image syntax (like ![alt](url)) or HTML image tags inside your content. Text ONLY.
 
 Provide the response in JSON format only inside { } brackets like this:
-{"title": "New Title", "content": "Content here", "tags": ["tag1", "tag2"]}`;
+{"title": "New Title in Arabic", "content": "Arabic Content here", "tags": ["tag1", "tag2"]}`;
 
         const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=${GEMINI_API_KEY}`;
         const payload = {
