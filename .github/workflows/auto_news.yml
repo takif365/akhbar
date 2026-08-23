@@ -2,7 +2,7 @@ name: Auto News Publisher
 
 on:
   schedule:
-    - cron: '0 * * * *'
+    - cron: '*/30 * * * *'
   workflow_dispatch:
 
 jobs:
@@ -11,6 +11,13 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
+      
+      - name: Random Delay
+        if: github.event_name == 'schedule'
+        run: |
+          DELAY=$((RANDOM % 1500))
+          echo "Scheduled run: Waiting for $DELAY seconds to look human..."
+          sleep $DELAY
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
