@@ -9,7 +9,7 @@ export default defineAstroPaperConfig({
     profile: "https://akhbar3.com",
     ogImage: "default-og.jpg",
     lang: "ar",
-    timezone: "UTC",
+    timezone: "Asia/Riyadh",
     dir: "rtl",
   }, 
   posts: {
