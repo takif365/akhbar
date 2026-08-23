@@ -11,12 +11,6 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
-      
-      - name: Random Delay
-        run: |
-          # DELAY=$((RANDOM % 3300))
-          # sleep $DELAY
-          echo "Delay disabled for testing"
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
