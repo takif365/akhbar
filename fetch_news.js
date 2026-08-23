@@ -1,25 +1,54 @@
 import fs from 'fs';
 import path from 'path';
 
+const NEWS_API_KEY = process.env.NEWS_API_KEY;
 const NEWSDATA_API_KEY = process.env.NEWSDATA_API_KEY;
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 
 async function fetchAndRewriteNews() {
     try {
-        const newsUrl = `https://newsdata.io/api/1/news?apikey=${NEWSDATA_API_KEY}&language=ar&image=1`;
-        const newsRes = await fetch(newsUrl);
-        const newsData = await newsRes.json();
-
-        if (newsData.status !== "success" || !newsData.results || newsData.results.length === 0) {
-            process.exit(0);
-        }
-
         let selectedArticle = null;
-        for (const article of newsData.results) {
-            if (article.image_url && typeof article.image_url === 'string' && article.image_url.trim() !== '') {
-                selectedArticle = article;
-                break;
+
+        try {
+            const ndUrl = `https://newsdata.io/api/1/news?apikey=${NEWSDATA_API_KEY}&language=ar&image=1`;
+            const ndRes = await fetch(ndUrl);
+            const ndData = await ndRes.json();
+            
+            if (ndData.status === "success" && ndData.results && ndData.results.length > 0) {
+                for (const article of ndData.results) {
+                    if (article.image_url && typeof article.image_url === 'string' && article.image_url.trim() !== '') {
+                        selectedArticle = {
+                            title: article.title,
+                            content: article.description || article.content || article.title,
+                            image: article.image_url,
+                            pubDate: article.pubDate
+                        };
+                        break;
+                    }
+                }
             }
+        } catch (e) {}
+
+        if (!selectedArticle) {
+            try {
+                const gnUrl = `https://gnews.io/api/v4/top-headlines?category=general&lang=ar&max=10&apikey=${NEWS_API_KEY}`;
+                const gnRes = await fetch(gnUrl);
+                const gnData = await gnRes.json();
+                
+                if (gnData.articles && gnData.articles.length > 0) {
+                    for (const article of gnData.articles) {
+                        if (article.image && typeof article.image === 'string' && article.image.trim() !== '') {
+                            selectedArticle = {
+                                title: article.title,
+                                content: article.description || article.content || article.title,
+                                image: article.image,
+                                pubDate: article.publishedAt
+                            };
+                            break;
+                        }
+                    }
+                }
+            } catch (e) {}
         }
 
         if (!selectedArticle) {
@@ -27,8 +56,8 @@ async function fetchAndRewriteNews() {
         }
 
         const originalTitle = selectedArticle.title;
-        const originalContent = selectedArticle.description || selectedArticle.content || originalTitle;
-        const imageUrl = selectedArticle.image_url;
+        const originalContent = selectedArticle.content;
+        const imageUrl = selectedArticle.image;
 
         const prompt = `Act as a professional journalist. Rewrite this news professionally and neutrally in Arabic.
 News:
