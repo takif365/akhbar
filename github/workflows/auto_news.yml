@@ -14,18 +14,19 @@ jobs:
       
       - name: Random Delay
         run: |
-          DELAY=$((RANDOM % 3600))
-          echo "Sleeping for $DELAY seconds before fetching news..."
-          sleep $DELAY
+          # DELAY=$((RANDOM % 3300))
+          # sleep $DELAY
+          echo "Delay disabled for testing"
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '24'
           
       - name: Run AI News Script
         env:
-          NEWS_API_KEY: ${{ secrets.NEWS_API_KEY }}
+          NEWSDATA_API_KEY: ${{ secrets.NEWSDATA_API_KEY }}
+          CURRENTS_API_KEY: ${{ secrets.CURRENTS_API_KEY }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: node fetch_news.js
         
@@ -34,5 +35,9 @@ jobs:
           git config --global user.name 'News Bot'
           git config --global user.email 'bot@akhbar3.com'
           git add src/content/posts/*
-          git commit -m "إضافة أخبار جديدة تلقائياً" || echo "لا توجد تغييرات"
+          git commit -m "Auto add new article" || echo "No changes"
+          git pull --rebase origin main
           git push
+          
+      - name: Trigger Cloudflare Build
+        run: curl -X POST "${{ secrets.DEPLOY_HOOK }}"
