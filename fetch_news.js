@@ -72,6 +72,7 @@ Requirements:
 5. Paragraph 3: Event background, importance, and expected impacts.
 6. Categorize the article by selecting exactly ONE or TWO tags ONLY from this strict list: ["سياسة", "اقتصاد", "رياضة", "تكنولوجيا", "صحة", "علوم", "منوعات"]. Do not create or use any tags outside this list.
 7. CRITICAL: Do NOT write or include any Markdown image syntax (like ![alt](url)) or HTML image tags inside your content. Text ONLY.
+8. CRITICAL RULE: The entire article MUST be strictly in Arabic ONLY. DO NOT include ANY English words, Latin characters, foreign letters, or weird symbols. You MUST transliterate all brand names, companies, and acronyms into Arabic (e.g., write "شي إن" instead of "Shein", "ناسكار" instead of "NASCAR").
 
 Provide the response in JSON format only inside { } brackets like this:
 {"title": "New Title in Arabic", "content": "Arabic Content here", "tags": ["tag1", "tag2"]}`;
