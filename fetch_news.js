@@ -1,39 +1,35 @@
 import fs from 'fs';
 import path from 'path';
 
-const NEWS_API_KEY = process.env.NEWS_API_KEY;
+const NEWSDATA_API_KEY = process.env.NEWSDATA_API_KEY;
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 
 async function fetchAndRewriteNews() {
     try {
-        const newsUrl = `https://gnews.io/api/v4/top-headlines?category=general&lang=ar&max=5&apikey=${NEWS_API_KEY}`;
+        const newsUrl = `https://newsdata.io/api/1/news?apikey=${NEWSDATA_API_KEY}&language=ar&image=1`;
         const newsRes = await fetch(newsUrl);
         const newsData = await newsRes.json();
 
-        // 1. إنهاء السكربت فوراً إذا لم تكن هناك أخبار
-        if (!newsData.articles || newsData.articles.length === 0) {
+        if (newsData.status !== "success" || !newsData.results || newsData.results.length === 0) {
             process.exit(0);
         }
 
-        // 2. البحث الصارم عن خبر يحتوي على صورة حقيقية
         let selectedArticle = null;
-        for (const article of newsData.articles) {
-            if (article.image && typeof article.image === 'string' && article.image.trim() !== '') {
+        for (const article of newsData.results) {
+            if (article.image_url && typeof article.image_url === 'string' && article.image_url.trim() !== '') {
                 selectedArticle = article;
                 break;
             }
         }
 
-        // إنهاء السكربت إذا لم يجد أي خبر بصورة (الصرامة التي طلبتها)
         if (!selectedArticle) {
             process.exit(0);
         }
 
         const originalTitle = selectedArticle.title;
-        const originalContent = selectedArticle.description || selectedArticle.content;
-        const imageUrl = selectedArticle.image;
+        const originalContent = selectedArticle.description || selectedArticle.content || originalTitle;
+        const imageUrl = selectedArticle.image_url;
 
-        // 3. أمر صارم لـ Gemini بعدم استخدام أي أكواد صور داخل النص
         const prompt = `Act as a professional journalist. Rewrite this news professionally and neutrally in Arabic.
 News:
 Title: ${originalTitle}
@@ -87,12 +83,9 @@ Provide the response in JSON format only inside { } brackets like this:
             process.exit(0);
         }
 
-        // 4. فلتر التنظيف: مسح أي صورة قد يهلوس بها الذكاء الاصطناعي داخل النص
         const cleanContent = rewritten.content.replace(/!\[.*?\]\(.*?\)/g, '').trim();
 
-        // التعديل هنا: سحب وقت النشر الأصلي من وكالة الأنباء بدلاً من وقت الروبوت
-        const publishDate = selectedArticle.publishedAt ? new Date(selectedArticle.publishedAt) : new Date();
-        
+        const publishDate = selectedArticle.pubDate ? new Date(selectedArticle.pubDate) : new Date();
         const slug = rewritten.title.replace(/\s+/g, '-').replace(/[^\w\-\u0600-\u06FF]/g, '').substring(0, 40);
         const fileName = `${publishDate.getTime()}-${slug}.md`;
         
