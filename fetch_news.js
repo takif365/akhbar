@@ -100,7 +100,9 @@ async function fetchAndRewriteNews() {
         console.log(`=== Sending to AI (Source: ${selectedArticle.source}) ===`);
         const originalTitle = selectedArticle.title;
         const originalContent = selectedArticle.content;
-        const imageUrl = selectedArticle.image;
+        const rawImageUrl = selectedArticle.image;
+
+        const proxiedImageUrl = `https://wsrv.nl/?url=${encodeURIComponent(rawImageUrl)}`;
 
         const prompt = `Act as a professional journalist. Translate and rewrite this news professionally and neutrally in Arabic.
 News:
@@ -113,7 +115,7 @@ Requirements:
 3. Paragraph 1: Main event summary.
 4. Paragraph 2: Available details and information.
 5. Paragraph 3: Event background, importance, and expected impacts.
-6. Categorize the article by selecting exactly ONE or TWO tags ONLY from this strict list: ["سياسة", "اقتصاد", "رياضة", "تكنولوجيا", "صحة", "علوم", "منوعات"]. Do not create or use any tags outside this list.
+6. Categorize the article by selecting exactly ONE or TWO tags ONLY from this strict list: ["سياسة", "اقتصاد", "رياضة", "تكنولوجيا", "برمجة", "علوم", "صحة", "فن وترفيه", "أسلوب حياة", "طبخ وغذاء", "أخبار محلية", "عالمية", "منوعات"]. Do not create or use any tags outside this list.
 7. CRITICAL: Do NOT write or include any Markdown image syntax (like ![alt](url)) or HTML image tags inside your content. Text ONLY.
 8. CRITICAL RULE: The entire article MUST be strictly in Arabic ONLY. DO NOT include ANY English words, Latin characters, foreign letters, or weird symbols. You MUST transliterate all brand names, companies, and acronyms into Arabic (e.g., write "شي إن" instead of "Shein", "ناسكار" instead of "NASCAR").
 
@@ -177,16 +179,19 @@ Provide the response in JSON format only inside { } brackets like this:
              tagsList = '  - "أخبار"\n'; 
         }
 
+        const safeRawImage = rawImageUrl.replace(/'/g, "%27");
+        const fallbackImage = "https://placehold.co/800x400/212737/fdfdfd.png?text=Akhbar+3";
+
         let mdContent = `---
 title: "${cleanTitle}"
 author: "فريق التحرير"
 pubDatetime: ${publishDate.toISOString()}
 description: "${cleanDescription}"
-ogImage: "${imageUrl}"
+ogImage: "${safeRawImage}"
 tags:
 ${tagsList}---
 
-![صورة الخبر](${imageUrl})
+<img src="${proxiedImageUrl}" alt="${cleanTitle}" onerror="if (this.src !== '${safeRawImage}') { this.src = '${safeRawImage}'; } else { this.src = '${fallbackImage}'; }" style="width: 100%; border-radius: 8px; margin-bottom: 20px;" />
 
 ${cleanContent}
 
