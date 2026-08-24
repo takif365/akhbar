@@ -7,18 +7,18 @@ const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 
 async function fetchAndRewriteNews() {
     try {
-        console.log("=== بدء عملية جلب الأخبار ===");
+        console.log("=== Starting news fetching process ===");
         let selectedArticle = null;
 
-        // 1. تجربة Currents API
+        // 1. Try Currents API
         try {
-            console.log("-> جاري البحث في Currents API...");
+            console.log("-> Searching in Currents API...");
             const cuUrl = `https://api.currentsapi.services/v1/latest-news?language=en&apiKey=${CURRENTS_API_KEY}`;
             const cuRes = await fetch(cuUrl);
             const cuData = await cuRes.json();
             
             if (cuData.status === "ok" && cuData.news && cuData.news.length > 0) {
-                console.log(`تم العثور على ${cuData.news.length} أخبار في Currents. جاري الفلترة...`);
+                console.log(`Found ${cuData.news.length} articles in Currents. Filtering...`);
                 for (const article of cuData.news) {
                     if (article.image && typeof article.image === 'string' && article.image !== 'None' && article.image.trim() !== '') {
                         selectedArticle = {
@@ -28,21 +28,21 @@ async function fetchAndRewriteNews() {
                             pubDate: article.published,
                             source: "Currents"
                         };
-                        console.log("✅ تم اختيار خبر من Currents:", selectedArticle.title);
+                        console.log("Selected article from Currents:", selectedArticle.title);
                         break;
                     }
                 }
             } else {
-                console.log("❌ Currents API لم يُرجع أي أخبار.");
+                console.log("Currents API returned no articles.");
             }
         } catch (e) {
-            console.error("❌ خطأ في الاتصال بـ Currents:", e.message);
+            console.error("Error connecting to Currents:", e.message);
         }
 
-        // 2. تجربة NewsData API كخطة بديلة
+        // 2. Try NewsData API as Fallback
         if (!selectedArticle) {
             try {
-                console.log("-> جاري البحث في NewsData API كبديل...");
+                console.log("-> Searching in NewsData API as fallback...");
                 const ndUrl = `https://newsdata.io/api/1/news?apikey=${NEWSDATA_API_KEY}&language=ar&image=1`;
                 const ndRes = await fetch(ndUrl);
                 const ndData = await ndRes.json();
@@ -57,28 +57,31 @@ async function fetchAndRewriteNews() {
                                 pubDate: article.pubDate,
                                 source: "NewsData"
                             };
-                            console.log("✅ تم اختيار خبر من NewsData:", selectedArticle.title);
+                            console.log("Selected article from NewsData:", selectedArticle.title);
                             break;
                         }
                     }
                 } else {
-                    console.log("❌ NewsData API لم يُرجع أي أخبار.");
+                    console.log("NewsData API returned no articles.");
                 }
             } catch (e) {
-                console.error("❌ خطأ في الاتصال بـ NewsData:", e.message);
+                console.error("Error connecting to NewsData:", e.message);
             }
         }
 
-        // إنهاء إذا لم نجد أي خبر بصورة
+        // Exit if no article with image is found
         if (!selectedArticle) {
-            console.log("🛑 السكربت توقف: لم يتم العثور على أي خبر بصورة في كلا الموقعين.");
+            console.log("Script stopped: No article with image found in both sources.");
             return;
         }
 
-        console.log(`=== إرسال الخبر للذكاء الاصطناعي (المصدر: ${selectedArticle.source}) ===`);
+        console.log(`=== Sending to AI (Source: ${selectedArticle.source}) ===`);
         const originalTitle = selectedArticle.title;
         const originalContent = selectedArticle.content;
-        const imageUrl = selectedArticle.image;
+        const rawImageUrl = selectedArticle.image;
+
+        // IMAGE PROXY TO BYPASS HOTLINK PROTECTION (سلاح كسر حماية الصور)
+        const proxiedImageUrl = `https://wsrv.nl/?url=${encodeURIComponent(rawImageUrl)}`;
 
         const prompt = `Act as a professional journalist. Translate and rewrite this news professionally and neutrally in Arabic.
 News:
@@ -98,7 +101,7 @@ Requirements:
 Provide the response in JSON format only inside { } brackets like this:
 {"title": "New Title in Arabic", "content": "Arabic Content here", "tags": ["tag1", "tag2"]}`;
 
-        // استخدمنا الموديل المستقر والأسرع 1.5-flash
+        // الموديل الصحيح والأسرع لجوجل
         const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=${GEMINI_API_KEY}`;
         const payload = {
             contents: [{ parts: [{ text: prompt }] }],
@@ -119,23 +122,23 @@ Provide the response in JSON format only inside { } brackets like this:
         const geminiData = await geminiRes.json();
 
         if (!geminiData.candidates || geminiData.candidates.length === 0) {
-            console.log("❌ السكربت توقف: Gemini رفض صياغة المقال أو أعاد رداً فارغاً.", JSON.stringify(geminiData).substring(0, 200));
+            console.log("Script stopped: Gemini rejected or returned empty.", JSON.stringify(geminiData).substring(0, 200));
             return;
         }
 
-        console.log("✅ Gemini قام بالرد بنجاح. جاري استخراج النص...");
+        console.log("Gemini responded successfully. Extracting text...");
         const responseText = geminiData.candidates[0].content.parts[0].text;
         
         let rewritten;
         try {
             const jsonMatch = responseText.match(/\{[\s\S]*\}/);
             if (!jsonMatch) {
-                console.log("❌ السكربت توقف: رد Gemini لم يكن بصيغة JSON.", responseText);
+                console.log("Script stopped: Gemini response is not valid JSON.", responseText);
                 return;
             }
             rewritten = JSON.parse(jsonMatch[0]);
         } catch (jsonError) {
-            console.log("❌ السكربت توقف: فشل في قراءة هيكل JSON.", jsonError.message);
+            console.log("Script stopped: Failed to parse JSON.", jsonError.message);
             return;
         }
 
@@ -161,11 +164,11 @@ title: "${cleanTitle}"
 author: "فريق التحرير"
 pubDatetime: ${publishDate.toISOString()}
 description: "${cleanDescription}"
-ogImage: "${imageUrl}"
+ogImage: "${proxiedImageUrl}"
 tags:
 ${tagsList}---
 
-![صورة الخبر](${imageUrl})
+![صورة الخبر](${proxiedImageUrl})
 
 ${cleanContent}
 
@@ -179,10 +182,10 @@ ${cleanContent}
         const filePath = path.join(folderPath, fileName);
         
         fs.writeFileSync(filePath, mdContent);
-        console.log(`✅ تمت العملية بنجاح! تم حفظ المقال: ${fileName}`);
+        console.log(`Process completed successfully! Saved: ${fileName}`);
         
     } catch (error) {
-        console.error("❌ خطأ برمجي حرج:", error.message);
+        console.error("Critical error:", error.message);
         process.exit(1);
     }
 }
