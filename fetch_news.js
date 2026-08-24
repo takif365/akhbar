@@ -5,41 +5,59 @@ const NEWSDATA_API_KEY = process.env.NEWSDATA_API_KEY;
 const CURRENTS_API_KEY = process.env.CURRENTS_API_KEY;
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 
+async function validateImageUrl(url) {
+    try {
+        const response = await fetch(url, { 
+            method: 'HEAD',
+            headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' },
+            signal: AbortSignal.timeout(3000)
+        });
+        return response.ok && response.headers.get('content-type')?.startsWith('image/');
+    } catch (error) {
+        return false;
+    }
+}
+
 async function fetchAndRewriteNews() {
     try {
         console.log("=== Starting news fetching process ===");
         let selectedArticle = null;
 
-        // 1. Try Currents API
         try {
             console.log("-> Searching in Currents API...");
-            const cuUrl = `https://api.currentsapi.services/v1/latest-news?language=en&apiKey=${CURRENTS_API_KEY}`;
-            const cuRes = await fetch(cuUrl);
+            const cuUrl = `https://api.currentsapi.services/v1/latest-news?language=en`;
+            const cuRes = await fetch(cuUrl, {
+                headers: { 'Authorization': `Bearer ${CURRENTS_API_KEY}` }
+            });
             const cuData = await cuRes.json();
             
             if (cuData.status === "ok" && cuData.news && cuData.news.length > 0) {
-                console.log(`Found ${cuData.news.length} articles in Currents. Filtering...`);
+                console.log(`Found ${cuData.news.length} articles in Currents. Filtering and validating images...`);
                 for (const article of cuData.news) {
                     if (article.image && typeof article.image === 'string' && article.image !== 'None' && article.image.trim() !== '') {
-                        selectedArticle = {
-                            title: article.title,
-                            content: article.description || article.title,
-                            image: article.image,
-                            pubDate: article.published,
-                            source: "Currents"
-                        };
-                        console.log("Selected article from Currents:", selectedArticle.title);
-                        break;
+                        const isImageValid = await validateImageUrl(article.image);
+                        if (isImageValid) {
+                            selectedArticle = {
+                                title: article.title,
+                                content: article.description || article.title,
+                                image: article.image,
+                                pubDate: article.published,
+                                source: "Currents"
+                            };
+                            console.log("Selected article with VALID image from Currents:", selectedArticle.title);
+                            break;
+                        } else {
+                            console.log(`Skipped article (Broken/Protected Image): ${article.title}`);
+                        }
                     }
                 }
             } else {
-                console.log("Currents API returned no articles.");
+                console.log("Currents API returned no valid data.");
             }
         } catch (e) {
             console.error("Error connecting to Currents:", e.message);
         }
 
-        // 2. Try NewsData API as Fallback
         if (!selectedArticle) {
             try {
                 console.log("-> Searching in NewsData API as fallback...");
@@ -50,38 +68,39 @@ async function fetchAndRewriteNews() {
                 if (ndData.status === "success" && ndData.results && ndData.results.length > 0) {
                     for (const article of ndData.results) {
                         if (article.image_url && typeof article.image_url === 'string' && article.image_url.trim() !== '') {
-                            selectedArticle = {
-                                title: article.title,
-                                content: article.description || article.content || article.title,
-                                image: article.image_url,
-                                pubDate: article.pubDate,
-                                source: "NewsData"
-                            };
-                            console.log("Selected article from NewsData:", selectedArticle.title);
-                            break;
+                            const isImageValid = await validateImageUrl(article.image_url);
+                            if (isImageValid) {
+                                selectedArticle = {
+                                    title: article.title,
+                                    content: article.description || article.content || article.title,
+                                    image: article.image_url,
+                                    pubDate: article.pubDate,
+                                    source: "NewsData"
+                                };
+                                console.log("Selected article with VALID image from NewsData:", selectedArticle.title);
+                                break;
+                            } else {
+                                console.log(`Skipped article (Broken/Protected Image): ${article.title}`);
+                            }
                         }
                     }
                 } else {
-                    console.log("NewsData API returned no articles.");
+                    console.log("NewsData API returned no valid data.");
                 }
             } catch (e) {
                 console.error("Error connecting to NewsData:", e.message);
             }
         }
 
-        // Exit if no article with image is found
         if (!selectedArticle) {
-            console.log("Script stopped: No article with image found in both sources.");
-            return;
+            console.log("Script stopped: No article with a working image was found in both sources.");
+            process.exit(0);
         }
 
         console.log(`=== Sending to AI (Source: ${selectedArticle.source}) ===`);
         const originalTitle = selectedArticle.title;
         const originalContent = selectedArticle.content;
-        const rawImageUrl = selectedArticle.image;
-
-        // IMAGE PROXY TO BYPASS HOTLINK PROTECTION (سلاح كسر حماية الصور)
-        const proxiedImageUrl = `https://wsrv.nl/?url=${encodeURIComponent(rawImageUrl)}`;
+        const imageUrl = selectedArticle.image;
 
         const prompt = `Act as a professional journalist. Translate and rewrite this news professionally and neutrally in Arabic.
 News:
@@ -101,8 +120,7 @@ Requirements:
 Provide the response in JSON format only inside { } brackets like this:
 {"title": "New Title in Arabic", "content": "Arabic Content here", "tags": ["tag1", "tag2"]}`;
 
-        // الموديل الصحيح والأسرع لجوجل
-        const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+        const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
         const payload = {
             contents: [{ parts: [{ text: prompt }] }],
             safetySettings: [
@@ -123,7 +141,7 @@ Provide the response in JSON format only inside { } brackets like this:
 
         if (!geminiData.candidates || geminiData.candidates.length === 0) {
             console.log("Script stopped: Gemini rejected or returned empty.", JSON.stringify(geminiData).substring(0, 200));
-            return;
+            process.exit(0);
         }
 
         console.log("Gemini responded successfully. Extracting text...");
@@ -134,12 +152,12 @@ Provide the response in JSON format only inside { } brackets like this:
             const jsonMatch = responseText.match(/\{[\s\S]*\}/);
             if (!jsonMatch) {
                 console.log("Script stopped: Gemini response is not valid JSON.", responseText);
-                return;
+                process.exit(0);
             }
             rewritten = JSON.parse(jsonMatch[0]);
         } catch (jsonError) {
             console.log("Script stopped: Failed to parse JSON.", jsonError.message);
-            return;
+            process.exit(0);
         }
 
         const cleanContent = rewritten.content.replace(/!\[.*?\]\(.*?\)/g, '').trim();
@@ -164,11 +182,11 @@ title: "${cleanTitle}"
 author: "فريق التحرير"
 pubDatetime: ${publishDate.toISOString()}
 description: "${cleanDescription}"
-ogImage: "${proxiedImageUrl}"
+ogImage: "${imageUrl}"
 tags:
 ${tagsList}---
 
-![صورة الخبر](${proxiedImageUrl})
+![صورة الخبر](${imageUrl})
 
 ${cleanContent}
 
