@@ -18,7 +18,7 @@ const { title, description, ogImage, canonicalURL, pubDatetime, modDatetime } =
 
 const structuredData = {
   "@context": "https://schema.org",
-  "@type": "NewsArticle", // تم تغييرها إلى مقال إخباري لضمان قبول جوجل نيوز
+  "@type": "NewsArticle",
   headline: title ?? site.title,
   image: ogImage,
   ...(pubDatetime && { datePublished: pubDatetime.toISOString() }),
@@ -35,7 +35,9 @@ const structuredData = {
     name: site.title,
     logo: {
       "@type": "ImageObject",
-      url: `${site.url}/favicon.svg` // ربط الشعار لتتعرف عليه روبوتات جوجل
+      url: `${site.url}/logo-square.png`,
+      width: 1000,
+      height: 1000
     }
   }
 };
@@ -43,7 +45,6 @@ const structuredData = {
 
 <Layout {title} {description} {ogImage} {canonicalURL}>
   <Fragment slot="head">
-    <!-- Override og:type for article pages -->
     <meta property="og:type" content="article" />
 
     {
@@ -69,6 +70,21 @@ const structuredData = {
       set:html={JSON.stringify(structuredData)}
     />
   </Fragment>
+
+  <style is:global>
+    article.prose p {
+      text-align: justify;
+    }
+
+    article.prose h1,
+    article.prose h2,
+    article.prose h3,
+    article.prose h4,
+    article.prose h5,
+    article.prose h6 {
+      text-wrap: balance;
+    }
+  </style>
 
   <slot />
 </Layout>
