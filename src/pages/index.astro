@@ -95,12 +95,12 @@ const homePath = getRelativeLocaleUrl(locale, "");
 </Layout>
 
 <script>
-  function setupIndexBackUrl() {
-    const indexLayout = document.querySelector("#main-content");
+  document.addEventListener("astro:page-load", () => {
+    const indexLayout = (document.querySelector("#main-content") as HTMLElement)
+      ?.dataset;
     const baseRoot = import.meta.env.BASE_URL.replace(/\/?$/, "/");
-    if (indexLayout && indexLayout.dataset && indexLayout.dataset.layout) {
-      sessionStorage.setItem("backUrl", indexLayout.dataset.homePath ?? baseRoot);
+    if (indexLayout && indexLayout.layout) {
+      sessionStorage.setItem("backUrl", indexLayout.homePath ?? baseRoot);
     }
-  }
-  document.addEventListener("astro:page-load", setupIndexBackUrl);
+  });
 </script>
