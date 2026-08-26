@@ -30,8 +30,8 @@ const homePath = getRelativeLocaleUrl(locale, "");
     data-home-path={homePath}
     class="app-layout my-1"
   >
-    <section id="hero" class="pt-4 pb-2 sm:pt-6 sm:pb-4">
-      <h1 class="text-base font-medium leading-relaxed sm:text-lg">
+    <section id="hero" class="border-b border-border pt-6 pb-6 sm:pt-8 sm:pb-8">
+      <h1 class="w-full max-w-4xl text-base font-medium leading-relaxed sm:text-lg">
         متابعة مستمرة لأبرز الأخبار العربية والعالمية. نقدم لك تغطية شاملة للأحداث على مدار الساعة بموضوعية وحيادية.
       </h1>
       
@@ -53,7 +53,7 @@ const homePath = getRelativeLocaleUrl(locale, "");
           id="featured"
           class:list={[
             "pt-6 pb-6",
-            { "border-border border-b": recentPosts.length > 0 },
+            { "border-b border-border": recentPosts.length > 0 },
           ]}
         >
           <h2 class="text-2xl font-semibold tracking-wide">
