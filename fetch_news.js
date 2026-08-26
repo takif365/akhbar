@@ -133,16 +133,50 @@ Provide the response in JSON format only inside { } brackets like this:
             ]
         };
 
-        const geminiRes = await fetch(geminiUrl, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-        });
-        
-        const geminiData = await geminiRes.json();
+        let geminiData = null;
+        let maxRetries = 3;
+        let attempt = 0;
+        let success = false;
 
-        if (!geminiData.candidates || geminiData.candidates.length === 0) {
-            console.log("Script stopped: Gemini rejected or returned empty.", JSON.stringify(geminiData).substring(0, 200));
+        while (attempt < maxRetries && !success) {
+            attempt++;
+            console.log(`Sending request to Gemini... Attempt ${attempt} of ${maxRetries}`);
+            
+            try {
+                const geminiRes = await fetch(geminiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                
+                geminiData = await geminiRes.json();
+
+                if (geminiData.error) {
+                    console.log(`Gemini API Error: ${geminiData.error.message}`);
+                    if (attempt < maxRetries) {
+                        console.log("Waiting 60 seconds before retrying...");
+                        await new Promise(resolve => setTimeout(resolve, 60000));
+                    }
+                } else if (geminiData.candidates && geminiData.candidates.length > 0) {
+                    success = true;
+                } else {
+                    console.log("Empty response from Gemini.");
+                    if (attempt < maxRetries) {
+                        console.log("Waiting 60 seconds before retrying...");
+                        await new Promise(resolve => setTimeout(resolve, 60000));
+                    }
+                }
+            } catch (err) {
+                console.error(`Network error connecting to Gemini: ${err.message}`);
+                if (attempt < maxRetries) {
+                    console.log("Waiting 60 seconds before retrying...");
+                    await new Promise(resolve => setTimeout(resolve, 60000));
+                }
+            }
+        }
+
+        if (!success || !geminiData || !geminiData.candidates) {
+            console.log("Script stopped: Gemini failed after maximum retries.");
             process.exit(0);
         }
 
