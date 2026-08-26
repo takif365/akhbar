@@ -32,15 +32,15 @@ const homePath = getRelativeLocaleUrl(locale, "");
   >
     <section id="hero" class="border-b border-border flex flex-col items-center pt-6 pb-6 sm:pt-8 sm:pb-8">
       <h1 class="mx-auto w-full max-w-4xl text-center text-base font-medium leading-relaxed sm:text-lg">
-        <span class="block">Akhbar 3 Live Coverage</span>
-        <span class="block">Objective and Neutral News</span>
+        <span class="block">متابعة مستمرة لأبرز الأخبار العربية والعالمية.</span>
+        <span class="block">نقدم لك تغطية شاملة للأحداث على مدار الساعة بموضوعية وحيادية.</span>
       </h1>
       
       {
         socials.length > 0 && (
           <div class="mt-4 flex max-sm:flex-col sm:items-center">
             <div class="me-2 mb-1 whitespace-nowrap text-center sm:mb-0">
-              Follow us on:
+              تابعنا على:
             </div>
             <Socials />
           </div>
@@ -58,7 +58,7 @@ const homePath = getRelativeLocaleUrl(locale, "");
           ]}
         >
           <h2 class="text-2xl font-semibold tracking-wide">
-            Featured News
+            أخبار هامة
           </h2>
           <ul>
             {featuredPosts.map(data => (
@@ -73,7 +73,7 @@ const homePath = getRelativeLocaleUrl(locale, "");
       recentPosts.length > 0 && (
         <section id="recent-posts" class="pt-6 pb-6">
           <h2 class="text-2xl font-semibold tracking-wide">
-            Latest News
+            أحدث الأخبار
           </h2>
           <ul>
             {recentPosts.slice(0, postsConfig.perIndex).map(data => (
@@ -86,7 +86,7 @@ const homePath = getRelativeLocaleUrl(locale, "");
 
     <div class="my-8 text-center">
       <LinkButton href={getRelativeLocaleUrl(locale, "posts")}>
-        Browse All News
+        تصفح جميع الأخبار
         <IconArrowRight class="inline-block rtl:-rotate-180" />
       </LinkButton>
     </div>
