@@ -31,15 +31,16 @@ const homePath = getRelativeLocaleUrl(locale, "");
     class="app-layout my-1"
   >
     <section id="hero" class="border-b border-border flex flex-col items-center pt-6 pb-6 sm:pt-8 sm:pb-8">
-      <h1 class="mx-auto w-full max-w-4xl text-balance text-center text-base font-medium leading-relaxed sm:text-lg">
-        متابعة مستمرة لأبرز الأخبار العربية والعالمية. نقدم لك تغطية شاملة للأحداث على مدار الساعة بموضوعية وحيادية.
+      <h1 class="mx-auto w-full max-w-4xl text-center text-base font-medium leading-relaxed sm:text-lg">
+        <span class="block">Akhbar 3 Live Coverage</span>
+        <span class="block">Objective and Neutral News</span>
       </h1>
       
       {
         socials.length > 0 && (
           <div class="mt-4 flex max-sm:flex-col sm:items-center">
             <div class="me-2 mb-1 whitespace-nowrap text-center sm:mb-0">
-              تابعنا على:
+              Follow us on:
             </div>
             <Socials />
           </div>
@@ -57,7 +58,7 @@ const homePath = getRelativeLocaleUrl(locale, "");
           ]}
         >
           <h2 class="text-2xl font-semibold tracking-wide">
-            أخبار هامة
+            Featured News
           </h2>
           <ul>
             {featuredPosts.map(data => (
@@ -72,7 +73,7 @@ const homePath = getRelativeLocaleUrl(locale, "");
       recentPosts.length > 0 && (
         <section id="recent-posts" class="pt-6 pb-6">
           <h2 class="text-2xl font-semibold tracking-wide">
-            أحدث الأخبار
+            Latest News
           </h2>
           <ul>
             {recentPosts.slice(0, postsConfig.perIndex).map(data => (
@@ -85,7 +86,7 @@ const homePath = getRelativeLocaleUrl(locale, "");
 
     <div class="my-8 text-center">
       <LinkButton href={getRelativeLocaleUrl(locale, "posts")}>
-        تصفح جميع الأخبار
+        Browse All News
         <IconArrowRight class="inline-block rtl:-rotate-180" />
       </LinkButton>
     </div>
@@ -94,12 +95,12 @@ const homePath = getRelativeLocaleUrl(locale, "");
 </Layout>
 
 <script>
-  document.addEventListener("astro:page-load", () => {
-    const indexLayout = (document.querySelector("#main-content") as HTMLElement)
-      ?.dataset;
+  function setupIndexBackUrl() {
+    const indexLayout = document.querySelector("#main-content");
     const baseRoot = import.meta.env.BASE_URL.replace(/\/?$/, "/");
-    if (indexLayout?.layout) {
-      sessionStorage.setItem("backUrl", indexLayout.homePath ?? baseRoot);
+    if (indexLayout && indexLayout.dataset && indexLayout.dataset.layout) {
+      sessionStorage.setItem("backUrl", indexLayout.dataset.homePath ?? baseRoot);
     }
-  });
+  }
+  document.addEventListener("astro:page-load", setupIndexBackUrl);
 </script>
