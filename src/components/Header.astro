@@ -17,8 +17,6 @@ const { site, features } = config;
 const locale = Astro.currentLocale ?? config.site.lang;
 const t = useTranslations(locale);
 
-// Strip the base prefix so isActive comparisons work regardless of deploy subdirectory.
-// e.g. with base "/blog": "/blog/posts/slug" → "/posts/slug"
 const relativePath = stripBase(Astro.url.pathname);
 const pathWithoutTrailingSlash =
   relativePath.endsWith("/") && relativePath !== "/"
@@ -50,9 +48,10 @@ const isActive = (path: string) => {
   >
     <a
       href={getRelativeLocaleUrl(locale, "")}
-      class="absolute py-1 text-xl leading-8 font-semibold whitespace-nowrap sm:static sm:my-auto sm:text-2xl sm:leading-none"
+      class="absolute py-1 whitespace-nowrap sm:static sm:my-auto"
     >
-      {site.title}
+      <img src="/logo-rect-light.png" alt={site.title} class="block h-8 w-auto dark:hidden sm:h-10" />
+      <img src="/logo-rect-dark.png" alt={site.title} class="hidden h-8 w-auto dark:block sm:h-10" />
     </a>
     <nav
       id="nav-menu"
