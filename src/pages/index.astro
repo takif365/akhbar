@@ -1,7 +1,6 @@
 ---
 import { getCollection } from "astro:content";
 import { getRelativeLocaleUrl } from "astro:i18n";
-import IconRss from "@/assets/icons/IconRss.svg";
 import IconArrowRight from "@/assets/icons/IconArrowRight.svg";
 import Layout from "@/layouts/Layout.astro";
 import Header from "@/components/Header.astro";
@@ -31,28 +30,10 @@ const homePath = getRelativeLocaleUrl(locale, "");
     data-home-path={homePath}
     class="app-layout my-1"
   >
-    <section id="hero" class="border-border border-b pt-8 pb-6">
-      <h1 class="my-4 inline-block text-4xl font-bold sm:my-8 sm:text-5xl">
-        أخبار 3
+    <section id="hero" class="pt-4 pb-2 sm:pt-6 sm:pb-4">
+      <h1 class="text-base font-medium leading-relaxed sm:text-lg">
+        متابعة مستمرة لأبرز الأخبار العربية والعالمية. نقدم لك تغطية شاملة للأحداث على مدار الساعة بموضوعية وحيادية.
       </h1>
-      <a
-        target="_blank"
-        href={`${import.meta.env.BASE_URL.replace(/\/?$/, "/")}rss.xml`}
-        class="inline-block"
-        aria-label="RSS Feed"
-        title="RSS Feed"
-      >
-        <IconRss
-          width={20}
-          height={20}
-          class="stroke-accent scale-125 stroke-3 rtl:-rotate-90"
-        />
-        <span class="sr-only">RSS Feed</span>
-      </a>
-
-      <p>
-       متابعة مستمرة لأبرز الأخبار العربية والعالمية. نقدم لك تغطية شاملة للأحداث على مدار الساعة بموضوعية وحيادية.
-      </p>
       
       {
         socials.length > 0 && (
@@ -71,7 +52,7 @@ const homePath = getRelativeLocaleUrl(locale, "");
         <section
           id="featured"
           class:list={[
-            "pt-12 pb-6",
+            "pt-6 pb-6",
             { "border-border border-b": recentPosts.length > 0 },
           ]}
         >
@@ -89,7 +70,7 @@ const homePath = getRelativeLocaleUrl(locale, "");
 
     {
       recentPosts.length > 0 && (
-        <section id="recent-posts" class="pt-12 pb-6">
+        <section id="recent-posts" class="pt-6 pb-6">
           <h2 class="text-2xl font-semibold tracking-wide">
             أحدث الأخبار
           </h2>
