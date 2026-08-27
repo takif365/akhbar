@@ -33,7 +33,9 @@ async function fetchAndRewriteNews() {
             
             if (cuData.status === "ok" && cuData.news && cuData.news.length > 0) {
                 console.log(`Found ${cuData.news.length} articles in Currents. Filtering and validating images...`);
-                for (const article of cuData.news) {
+                // التعديل هنا: خلط المصفوفة عشوائياً
+                const shuffledCurrents = cuData.news.sort(() => 0.5 - Math.random());
+                for (const article of shuffledCurrents) {
                     if (article.image && typeof article.image === 'string' && article.image !== 'None' && article.image.trim() !== '') {
                         const isImageValid = await validateImageUrl(article.image);
                         if (isImageValid) {
@@ -66,7 +68,9 @@ async function fetchAndRewriteNews() {
                 const ndData = await ndRes.json();
                 
                 if (ndData.status === "success" && ndData.results && ndData.results.length > 0) {
-                    for (const article of ndData.results) {
+                    // التعديل هنا: خلط المصفوفة عشوائياً
+                    const shuffledNewsData = ndData.results.sort(() => 0.5 - Math.random());
+                    for (const article of shuffledNewsData) {
                         if (article.image_url && typeof article.image_url === 'string' && article.image_url.trim() !== '') {
                             const isImageValid = await validateImageUrl(article.image_url);
                             if (isImageValid) {
