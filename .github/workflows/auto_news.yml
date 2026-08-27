@@ -5,7 +5,7 @@ on:
     - cron: '*/30 * * * *'
   workflow_dispatch:
 
-jobs:
+jobs: 
   publish-news:
     runs-on: ubuntu-latest
     steps:
@@ -13,7 +13,6 @@ jobs:
         uses: actions/checkout@v4
       
       - name: Random Delay
-        if: github.event_name == 'schedule'
         run: |
           DELAY=$((RANDOM % 300))
           echo "Scheduled run: Waiting for $DELAY seconds to look human..."
