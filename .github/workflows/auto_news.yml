@@ -15,7 +15,7 @@ jobs:
       - name: Random Delay
         if: github.event_name == 'schedule'
         run: |
-          DELAY=$((RANDOM % 1500))
+          DELAY=$((RANDOM % 300))
           echo "Scheduled run: Waiting for $DELAY seconds to look human..."
           sleep $DELAY
 
