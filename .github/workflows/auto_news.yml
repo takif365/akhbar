@@ -14,8 +14,8 @@ jobs:
       
       - name: Random Delay
         run: |
-          DELAY=$((RANDOM % 300))
-          echo "Scheduled run: Waiting for $DELAY seconds to look human..."
+          DELAY=$((180 + RANDOM % 600))
+          echo "Webhook run: Waiting for $DELAY seconds to look human..."
           sleep $DELAY
 
       - name: Setup Node.js
