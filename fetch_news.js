@@ -5,6 +5,17 @@ const NEWSDATA_API_KEY = process.env.NEWSDATA_API_KEY;
 const CURRENTS_API_KEY = process.env.CURRENTS_API_KEY;
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 
+const historyPath = path.join(process.cwd(), 'history.json');
+let publishedHistory = [];
+
+if (fs.existsSync(historyPath)) {
+    try {
+        publishedHistory = JSON.parse(fs.readFileSync(historyPath, 'utf8'));
+    } catch (e) {
+        publishedHistory = [];
+    }
+}
+
 async function validateImageUrl(url) {
     try {
         const response = await fetch(url, { 
@@ -20,11 +31,9 @@ async function validateImageUrl(url) {
 
 async function fetchAndRewriteNews() {
     try {
-        console.log("=== Starting news fetching process ===");
         let selectedArticle = null;
 
         try {
-            console.log("-> Searching in Currents API...");
             const cuUrl = `https://api.currentsapi.services/v1/latest-news?language=en`;
             const cuRes = await fetch(cuUrl, {
                 headers: { 'Authorization': `Bearer ${CURRENTS_API_KEY}` }
@@ -32,10 +41,11 @@ async function fetchAndRewriteNews() {
             const cuData = await cuRes.json();
             
             if (cuData.status === "ok" && cuData.news && cuData.news.length > 0) {
-                console.log(`Found ${cuData.news.length} articles in Currents. Filtering and validating images...`);
-                // التعديل هنا: خلط المصفوفة عشوائياً
                 const shuffledCurrents = cuData.news.sort(() => 0.5 - Math.random());
                 for (const article of shuffledCurrents) {
+                    if (publishedHistory.includes(article.title)) {
+                        continue;
+                    }
                     if (article.image && typeof article.image === 'string' && article.image !== 'None' && article.image.trim() !== '') {
                         const isImageValid = await validateImageUrl(article.image);
                         if (isImageValid) {
@@ -46,31 +56,27 @@ async function fetchAndRewriteNews() {
                                 pubDate: article.published,
                                 source: "Currents"
                             };
-                            console.log("Selected article with VALID image from Currents:", selectedArticle.title);
                             break;
-                        } else {
-                            console.log(`Skipped article (Broken/Protected Image): ${article.title}`);
                         }
                     }
                 }
-            } else {
-                console.log("Currents API returned no valid data.");
             }
         } catch (e) {
-            console.error("Error connecting to Currents:", e.message);
+            console.error(e.message);
         }
 
         if (!selectedArticle) {
             try {
-                console.log("-> Searching in NewsData API as fallback...");
                 const ndUrl = `https://newsdata.io/api/1/news?apikey=${NEWSDATA_API_KEY}&language=ar&image=1`;
                 const ndRes = await fetch(ndUrl);
                 const ndData = await ndRes.json();
                 
                 if (ndData.status === "success" && ndData.results && ndData.results.length > 0) {
-                    // التعديل هنا: خلط المصفوفة عشوائياً
                     const shuffledNewsData = ndData.results.sort(() => 0.5 - Math.random());
                     for (const article of shuffledNewsData) {
+                        if (publishedHistory.includes(article.title)) {
+                            continue;
+                        }
                         if (article.image_url && typeof article.image_url === 'string' && article.image_url.trim() !== '') {
                             const isImageValid = await validateImageUrl(article.image_url);
                             if (isImageValid) {
@@ -81,27 +87,20 @@ async function fetchAndRewriteNews() {
                                     pubDate: article.pubDate,
                                     source: "NewsData"
                                 };
-                                console.log("Selected article with VALID image from NewsData:", selectedArticle.title);
                                 break;
-                            } else {
-                                console.log(`Skipped article (Broken/Protected Image): ${article.title}`);
                             }
                         }
                     }
-                } else {
-                    console.log("NewsData API returned no valid data.");
                 }
             } catch (e) {
-                console.error("Error connecting to NewsData:", e.message);
+                console.error(e.message);
             }
         }
 
         if (!selectedArticle) {
-            console.log("Script stopped: No article with a working image was found in both sources.");
             process.exit(0);
         }
 
-        console.log(`=== Sending to AI (Source: ${selectedArticle.source}) ===`);
         const originalTitle = selectedArticle.title;
         const originalContent = selectedArticle.content;
         const rawImageUrl = selectedArticle.image;
@@ -144,7 +143,6 @@ Provide the response in JSON format only inside { } brackets like this:
 
         while (attempt < maxRetries && !success) {
             attempt++;
-            console.log(`Sending request to Gemini... Attempt ${attempt} of ${maxRetries}`);
             
             try {
                 const geminiRes = await fetch(geminiUrl, {
@@ -156,47 +154,37 @@ Provide the response in JSON format only inside { } brackets like this:
                 geminiData = await geminiRes.json();
 
                 if (geminiData.error) {
-                    console.log(`Gemini API Error: ${geminiData.error.message}`);
                     if (attempt < maxRetries) {
-                        console.log("Waiting 60 seconds before retrying...");
                         await new Promise(resolve => setTimeout(resolve, 60000));
                     }
                 } else if (geminiData.candidates && geminiData.candidates.length > 0) {
                     success = true;
                 } else {
-                    console.log("Empty response from Gemini.");
                     if (attempt < maxRetries) {
-                        console.log("Waiting 60 seconds before retrying...");
                         await new Promise(resolve => setTimeout(resolve, 60000));
                     }
                 }
             } catch (err) {
-                console.error(`Network error connecting to Gemini: ${err.message}`);
                 if (attempt < maxRetries) {
-                    console.log("Waiting 60 seconds before retrying...");
                     await new Promise(resolve => setTimeout(resolve, 60000));
                 }
             }
         }
 
         if (!success || !geminiData || !geminiData.candidates) {
-            console.log("Script stopped: Gemini failed after maximum retries.");
             process.exit(0);
         }
 
-        console.log("Gemini responded successfully. Extracting text...");
         const responseText = geminiData.candidates[0].content.parts[0].text;
         
         let rewritten;
         try {
             const jsonMatch = responseText.match(/\{[\s\S]*\}/);
             if (!jsonMatch) {
-                console.log("Script stopped: Gemini response is not valid JSON.", responseText);
                 process.exit(0);
             }
             rewritten = JSON.parse(jsonMatch[0]);
         } catch (jsonError) {
-            console.log("Script stopped: Failed to parse JSON.", jsonError.message);
             process.exit(0);
         }
 
@@ -243,10 +231,15 @@ ${cleanContent}
         const filePath = path.join(folderPath, fileName);
         
         fs.writeFileSync(filePath, mdContent);
-        console.log(`Process completed successfully! Saved: ${fileName}`);
+        
+        publishedHistory.push(originalTitle);
+        if (publishedHistory.length > 1000) {
+            publishedHistory = publishedHistory.slice(-1000);
+        }
+        
+        fs.writeFileSync(historyPath, JSON.stringify(publishedHistory, null, 2));
         
     } catch (error) {
-        console.error("Critical error:", error.message);
         process.exit(1);
     }
 }
