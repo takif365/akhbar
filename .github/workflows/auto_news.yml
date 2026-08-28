@@ -1,9 +1,11 @@
 name: Auto News Publisher
 
 on:
-  schedule:
-    - cron: '*/30 * * * *'
   workflow_dispatch:
+
+concurrency: 
+  group: news-publisher
+  cancel-in-progress: false
 
 jobs: 
   publish-news:
@@ -35,6 +37,7 @@ jobs:
           git config --global user.name 'News Bot'
           git config --global user.email 'bot@akhbar3.com'
           git add src/content/posts/*
+          git add history.json || true
           git commit -m "Auto add new article" || echo "No changes"
           git pull --rebase origin main
           git push
