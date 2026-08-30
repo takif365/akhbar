@@ -10,6 +10,7 @@ concurrency:
 jobs: 
   publish-news:
     runs-on: ubuntu-latest
+    timeout-minutes: 25
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -17,7 +18,6 @@ jobs:
       - name: Random Delay
         run: |
           DELAY=$((180 + RANDOM % 600))
-          echo "Webhook run: Waiting for $DELAY seconds to look human..."
           sleep $DELAY
 
       - name: Setup Node.js
@@ -34,13 +34,19 @@ jobs:
         
       - name: Commit and Push New Articles
         run: |
-          git config --global user.name 'News Bot'
-          git config --global user.email 'bot@akhbar3.com'
+          git config --global user.name "News Bot"
+          git config --global user.email "bot@akhbar3.com"
           git add src/content/posts/*
           git add history.json || true
+          git add latest_url.txt || true
           git commit -m "Auto add new article" || echo "No changes"
           git pull --rebase origin main
           git push
           
       - name: Trigger Cloudflare Build
         run: curl -X POST "${{ secrets.DEPLOY_HOOK }}"
+
+      - name: Run Indexer Script
+        env:
+          GCP_SERVICE_ACCOUNT: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+        run: node indexer.js
