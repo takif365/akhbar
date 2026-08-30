@@ -176,9 +176,8 @@ Provide the response in JSON format only inside { } brackets like this:
 
         const cleanContent = rewritten.content.replace(/!\[.*?\]\(.*?\)/g, '').trim();
         const publishDate = selectedArticle.pubDate ? new Date(selectedArticle.pubDate) : new Date();
-        const slug = rewritten.title.replace(/\s+/g, '-').replace(/[^\w\-\u0600-\u06FF]/g, '').substring(0, 40);
-        const fileName = `${publishDate.getTime()}-${slug}.md`;
-        const slugWithoutExt = fileName.replace('.md', '');
+        const slug = rewritten.title.replace(/\s+/g, '-').replace(/[^\w\-\u0600-\u06FF]/g, '').replace(/-+/g, '-').replace(/^-|-$/g, '').substring(0, 60);
+        const fileName = `${slug}.md`;
         
         const cleanTitle = rewritten.title.replace(/"/g, "'");
         const cleanDescription = cleanContent.substring(0, 100).replace(/"/g, "'") + "...";
@@ -218,7 +217,7 @@ ${cleanContent}
         const filePath = path.join(folderPath, fileName);
         fs.writeFileSync(filePath, mdContent);
         
-        const targetUrl = `https://akhbar3.com/posts/${slugWithoutExt}`;
+        const targetUrl = `https://akhbar3.com/posts/${slug}/`;
         fs.writeFileSync(path.join(process.cwd(), 'latest_url.txt'), targetUrl);
 
         publishedHistory.push(originalTitle);
