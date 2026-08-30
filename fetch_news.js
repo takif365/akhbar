@@ -216,9 +216,6 @@ ${cleanContent}
         }
         const filePath = path.join(folderPath, fileName);
         fs.writeFileSync(filePath, mdContent);
-        
-        const targetUrl = `https://akhbar3.com/posts/${slug}/`;
-        fs.writeFileSync(path.join(process.cwd(), 'latest_url.txt'), targetUrl);
 
         publishedHistory.push(originalTitle);
         if (publishedHistory.length > 1000) {
