@@ -61,9 +61,7 @@ async function fetchAndRewriteNews() {
                     }
                 }
             }
-        } catch (e) {
-            console.error(e.message);
-        }
+        } catch (e) {}
 
         if (!selectedArticle) {
             try {
@@ -92,9 +90,7 @@ async function fetchAndRewriteNews() {
                         }
                     }
                 }
-            } catch (e) {
-                console.error(e.message);
-            }
+            } catch (e) {}
         }
 
         if (!selectedArticle) {
@@ -104,7 +100,6 @@ async function fetchAndRewriteNews() {
         const originalTitle = selectedArticle.title;
         const originalContent = selectedArticle.content;
         const rawImageUrl = selectedArticle.image;
-
         const proxiedImageUrl = `https://wsrv.nl/?url=${encodeURIComponent(rawImageUrl)}`;
 
         const prompt = `Act as a professional journalist. Translate and rewrite this news professionally and neutrally in Arabic.
@@ -143,26 +138,17 @@ Provide the response in JSON format only inside { } brackets like this:
 
         while (attempt < maxRetries && !success) {
             attempt++;
-            
             try {
                 const geminiRes = await fetch(geminiUrl, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 });
-                
                 geminiData = await geminiRes.json();
-
-                if (geminiData.error) {
-                    if (attempt < maxRetries) {
-                        await new Promise(resolve => setTimeout(resolve, 60000));
-                    }
-                } else if (geminiData.candidates && geminiData.candidates.length > 0) {
+                if (!geminiData.error && geminiData.candidates && geminiData.candidates.length > 0) {
                     success = true;
-                } else {
-                    if (attempt < maxRetries) {
-                        await new Promise(resolve => setTimeout(resolve, 60000));
-                    }
+                } else if (attempt < maxRetries) {
+                    await new Promise(resolve => setTimeout(resolve, 60000));
                 }
             } catch (err) {
                 if (attempt < maxRetries) {
@@ -192,6 +178,7 @@ Provide the response in JSON format only inside { } brackets like this:
         const publishDate = selectedArticle.pubDate ? new Date(selectedArticle.pubDate) : new Date();
         const slug = rewritten.title.replace(/\s+/g, '-').replace(/[^\w\-\u0600-\u06FF]/g, '').substring(0, 40);
         const fileName = `${publishDate.getTime()}-${slug}.md`;
+        const slugWithoutExt = fileName.replace('.md', '');
         
         const cleanTitle = rewritten.title.replace(/"/g, "'");
         const cleanDescription = cleanContent.substring(0, 100).replace(/"/g, "'") + "...";
@@ -229,14 +216,15 @@ ${cleanContent}
             fs.mkdirSync(folderPath, { recursive: true });
         }
         const filePath = path.join(folderPath, fileName);
-        
         fs.writeFileSync(filePath, mdContent);
         
+        const targetUrl = `https://akhbar3.com/posts/${slugWithoutExt}`;
+        fs.writeFileSync(path.join(process.cwd(), 'latest_url.txt'), targetUrl);
+
         publishedHistory.push(originalTitle);
         if (publishedHistory.length > 1000) {
             publishedHistory = publishedHistory.slice(-1000);
         }
-        
         fs.writeFileSync(historyPath, JSON.stringify(publishedHistory, null, 2));
         
     } catch (error) {
