@@ -1,5 +1,4 @@
 [
-  "Vatican considers Sunday prayer appearance as Pope Leo recovers from lung surgery",
   "First home buyers pick up mid-century inner-north apartment for $752,000",
   "Pope Leo XIV brings American-style governance to the Vatican, even in health crisis - The Korea Times",
   "Rome to consider sainthood for Irish Jesuit priest killed in bloody first World War battle",
@@ -998,5 +997,6 @@
   "Dhaka completes legal process to extradite Sheikh Hasina, awaits India’s call",
   "How to Create a WordPress Child Theme (Without Losing Your Customizations)",
   "Stranded at the airport: FAA ground stop derails travel plans",
-  "New Orleans port sues for control of China-linked tanker that crashed into cruise ship"
+  "New Orleans port sues for control of China-linked tanker that crashed into cruise ship",
+  "GitHub - merkhet-io/morletdb: A PostgreSQL extension (Rust + pgrx) for waveform archives. It stores raw sensor recordings losslessly, finds similar intervals with a shift-tolerant envelope search, and returns the original samples. Use it from SQL or let an AI agent search it over MCP."
 ]
