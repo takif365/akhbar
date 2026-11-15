@@ -1,5 +1,4 @@
 [
-  "Gyeonggi invites residents facing long commutes to Seoul to propose bus routes - The Korea Times",
   "Tom Dyas re-elected mayor of Kelowna",
   "[ED] Governor's costly slip of the tongue - The Korea Times",
   "Lisbon named Europe's best city and cruise destination for 2026",
@@ -998,5 +997,6 @@
   "FRSC honours crash victims, visits injured survivors in Gombe",
   "Opportunity Discovery: When \"Find a Problem\" Isn't Working",
   "Fillier scores again as Canada beats Sweden, advances to women's world hockey final",
-  "resilient_ws: WebSocket and SSE clients for Dart that survive bad networks"
+  "resilient_ws: WebSocket and SSE clients for Dart that survive bad networks",
+  "[CVE-2026-126187] — Unauthenticated RCE in React Server Components' Flight Protocol"
 ]
