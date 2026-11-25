@@ -1,5 +1,4 @@
 [
-  "Wan 2.2 A14B at 720p on a 24 GB GPU: why it runs out of memory and what to change",
   "No tricks: Japan steps up police patrols, tightens alcohol limits for Halloween",
   "As war strains Kremlin finances, Putin reaches into more pockets in search of new revenue streams",
   "With COVID in the rearview mirror, Perth Festival pushes back against parochialism",
@@ -998,5 +997,6 @@
   "SBA Communication: Cheap Cash Flow, But The Recovery Will Take Time",
   "Microsoft Crashed and Lost Its Engineers in 11,000 Teams Chats",
   "Investment firm Sprott backs Canadian miner Marimaca on Chilean copper ventures",
-  "Federal Register API in Python: final rules taking effect in the next 30 days, by CFR title, in a CSV"
+  "Federal Register API in Python: final rules taking effect in the next 30 days, by CFR title, in a CSV",
+  "Cheetah: Why I ditched Candle and wrote a self-developed engine to run Safetensors on old CPUs"
 ]
